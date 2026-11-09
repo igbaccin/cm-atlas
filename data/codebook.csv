@@ -1,0 +1,66 @@
+variable,label,type,source,note
+territory,Territory as recorded in the returns,string,output/<t>/<t>_returns.csv:territory,Original field and order retained. All row kinds are retained.
+source_file,Source transcription workbook,string,output/<t>/<t>_returns.csv:source_file,Original field and order retained. All row kinds are retained.
+sheet,Source worksheet,string,output/<t>/<t>_returns.csv:sheet,Original field and order retained. All row kinds are retained.
+page,Source page as recorded,string,output/<t>/<t>_returns.csv:page,Original field and order retained. All row kinds are retained.
+row_sr,Printed row serial as transcribed,string,output/<t>/<t>_returns.csv:row_sr,Original field and order retained. All row kinds are retained.
+cell,Source Excel cell address,string,output/<t>/<t>_returns.csv:cell,Original field and order retained. All row kinds are retained.
+table_title,Printed table title,strL,output/<t>/<t>_returns.csv:table_title,Original field and order retained. All row kinds are retained.
+institutions,Institutional scope recorded in returns,string,output/<t>/<t>_returns.csv:institutions,Original field and order retained. All row kinds are retained.
+population,Population recorded in returns,string,output/<t>/<t>_returns.csv:population,Original field and order retained. All row kinds are retained.
+patient_type,Patient type recorded in returns,string,output/<t>/<t>_returns.csv:patient_type,Original field and order retained. All row kinds are retained.
+place,Place recorded in returns,string,output/<t>/<t>_returns.csv:place,Original field and order retained. All row kinds are retained.
+year,Year as recorded in returns,string,output/<t>/<t>_returns.csv:year,Original field and order retained. All row kinds are retained.
+period_as_printed,Period as printed,string,output/<t>/<t>_returns.csv:period_as_printed,Original field and order retained. All row kinds are retained.
+list_in_force,Historical list identified by the territory build,string,output/<t>/<t>_returns.csv:list_in_force,Original field and order retained. All row kinds are retained.
+list_number_as_printed,Historical list number as printed,string,output/<t>/<t>_returns.csv:list_number_as_printed,Original field and order retained. All row kinds are retained.
+class_as_printed,Class heading as printed,strL,output/<t>/<t>_returns.csv:class_as_printed,Original field and order retained. All row kinds are retained.
+group_as_printed,Group heading as printed,string,output/<t>/<t>_returns.csv:group_as_printed,Original field and order retained. All row kinds are retained.
+disease_as_printed,Disease name as printed,string,output/<t>/<t>_returns.csv:disease_as_printed,Original field and order retained. All row kinds are retained.
+variety_as_printed,Disease variety as printed,string,output/<t>/<t>_returns.csv:variety_as_printed,Original field and order retained. All row kinds are retained.
+name_key,Settled printed-name identity key,string,output/<t>/<t>_returns.csv:name_key,Original field and order retained. All row kinds are retained.
+measure,Measure recorded in returns,string,output/<t>/<t>_returns.csv:measure,Original field and order retained. All row kinds are retained.
+value_as_printed,Figure as printed,string,output/<t>/<t>_returns.csv:value_as_printed,Original field and order retained. All row kinds are retained.
+value,Source numeric figure; no imputation,double,output/<t>/<t>_returns.csv:value,Original field and order retained. All row kinds are retained.
+row_kind,"Source row kind, including totals and headings",string,output/<t>/<t>_returns.csv:row_kind,Original field and order retained. All row kinds are retained.
+column_header,Printed column header from the measure map,strL,output/<t>/<t>_measure_map.csv:header_text,"N06 join: sheet/column/measure; narrowest row interval, then matching year, then map input order. No match stays blank."
+sex,Sex from the measure map,string,output/<t>/<t>_measure_map.csv:sex,"N06 join: sheet/column/measure; narrowest row interval, then matching year, then map input order. No match stays blank."
+unit,Unit from the measure map,string,output/<t>/<t>_measure_map.csv:unit,"N06 join: sheet/column/measure; narrowest row interval, then matching year, then map input order. No match stays blank."
+measure_interpretation,Measure-map interpretation,string,output/<t>/<t>_measure_map.csv:interpretation,"N06 join: sheet/column/measure; narrowest row interval, then matching year, then map input order. No match stays blank."
+detailed_code_as_printed,Detailed historical code recorded in the measure map,string,output/<t>/<t>_measure_map.csv:detailed_code_as_printed,"N06 join: sheet/column/measure; narrowest row interval, then matching year, then map input order. No match stays blank."
+icd10h_code,Settled ICD10h code,string,output/<t>/<t>_names_final.csv:icd10h_code,name_key join for line rows only. No code or join is invented.
+icd10h_title,Settled ICD10h title,string,output/<t>/<t>_names_final.csv:icd10h_title,name_key join for line rows only. No code or join is invented.
+icd10_code,ICD-10 code; Masterlist fallback where absent from names,string,output/<t>/<t>_names_final.csv:icd10_category; ../ICD10H documentation/ICD10H_MASTERLIST_2024.2.xlsx:Masterlist.ICD10 by ICD10H,"name_key join for line rows only. No code or join is invented. icd10_category in supplied names is a title, not a code; a non-code is treated as the ICD-10 code being absent, invoking the brief's fallback."
+icd10_3char,Three-character ICD-10 code from settled names,string,output/<t>/<t>_names_final.csv:icd10_3char,name_key join for line rows only. No code or join is invented.
+histcat,HistCat from settled names,string,output/<t>/<t>_names_final.csv:histcat,name_key join for line rows only. No code or join is invented.
+code_settled_by,Author or rule settling the code,string,output/<t>/<t>_names_final.csv:settled_by,name_key join for line rows only. No code or join is invented.
+code_basis,Settled coding basis,strL,output/<t>/<t>_names_final.csv:settle_basis,name_key join for line rows only. No code or join is invented.
+year_num,Integer year where source year is exactly four digits,int,"year matches ^[0-9]{4}$, converted to integer; otherwise missing",
+icd10_chapter,ICD-10 chapter numeral from three-character code,string,icd10_3char: N15 chapter ranges I through XXII,
+icd10_chapter_title,ICD-10 chapter title from N15 standard ranges,string,icd10_3char: N15 chapter ranges I through XXII,
+group_african,Draft African group from the group lens,string,output/lenses/lens_group_african_draft.csv:group by icd10h_code,
+group_kippen,Kippen category from the 32-group lens,string,output/lenses/lens_group_kippen32.csv:group by icd10h_code,
+group_preston,Preston group from the 12-group lens,string,output/lenses/lens_group_preston12.csv:group by icd10h_code,
+rg1901_item,rg1901 holding item number,string,output/lenses/lens_rg1901.csv:item_number,Join by icd10h_code; holding item is retained even where combined is populated.
+rg1901_item_title,rg1901 holding item title,string,output/lenses/lens_rg1901.csv:item_title,Join by icd10h_code; holding item is retained even where combined is populated.
+rg1901_combined,rg1901 items to report together,string,output/lenses/lens_rg1901.csv:report_as_items where report_as is nonblank,Join by icd10h_code; holding item is retained even where combined is populated.
+l1909_item,list1909 holding item number,string,output/lenses/lens_list1909.csv:item_number,Join by icd10h_code; holding item is retained even where combined is populated.
+l1909_item_title,list1909 holding item title,string,output/lenses/lens_list1909.csv:item_title,Join by icd10h_code; holding item is retained even where combined is populated.
+l1909_combined,list1909 items to report together,string,output/lenses/lens_list1909.csv:report_as_items where report_as is nonblank,Join by icd10h_code; holding item is retained even where combined is populated.
+l1920_item,list1920 holding item number,string,output/lenses/lens_list1920.csv:item_number,Join by icd10h_code; holding item is retained even where combined is populated.
+l1920_item_title,list1920 holding item title,string,output/lenses/lens_list1920.csv:item_title,Join by icd10h_code; holding item is retained even where combined is populated.
+l1920_combined,list1920 items to report together,string,output/lenses/lens_list1920.csv:report_as_items where report_as is nonblank,Join by icd10h_code; holding item is retained even where combined is populated.
+l1929_item,list1929 holding item number,string,output/lenses/lens_list1929.csv:item_number,Join by icd10h_code; holding item is retained even where combined is populated.
+l1929_item_title,list1929 holding item title,string,output/lenses/lens_list1929.csv:item_title,Join by icd10h_code; holding item is retained even where combined is populated.
+l1929_combined,list1929 items to report together,string,output/lenses/lens_list1929.csv:report_as_items where report_as is nonblank,Join by icd10h_code; holding item is retained even where combined is populated.
+l1938_item,list1938 holding item number,string,output/lenses/lens_list1938.csv:item_number,Join by icd10h_code; holding item is retained even where combined is populated.
+l1938_item_title,list1938 holding item title,string,output/lenses/lens_list1938.csv:item_title,Join by icd10h_code; holding item is retained even where combined is populated.
+l1938_combined,list1938 items to report together,string,output/lenses/lens_list1938.csv:report_as_items where report_as is nonblank,Join by icd10h_code; holding item is retained even where combined is populated.
+l1948a_item,list1948a holding item number,string,output/lenses/lens_list1948a.csv:item_number,Join by icd10h_code; holding item is retained even where combined is populated.
+l1948a_item_title,list1948a holding item title,string,output/lenses/lens_list1948a.csv:item_title,Join by icd10h_code; holding item is retained even where combined is populated.
+l1948a_combined,list1948a items to report together,string,output/lenses/lens_list1948a.csv:report_as_items where report_as is nonblank,Join by icd10h_code; holding item is retained even where combined is populated.
+l1948d_item,list1948d holding item number,string,output/lenses/lens_list1948d.csv:item_number,Join by icd10h_code; holding item is retained even where combined is populated.
+l1948d_item_title,list1948d holding item title,string,output/lenses/lens_list1948d.csv:item_title,Join by icd10h_code; holding item is retained even where combined is populated.
+l1948d_combined,list1948d items to report together,string,output/lenses/lens_list1948d.csv:report_as_items where report_as is nonblank,Join by icd10h_code; holding item is retained even where combined is populated.
+source_repeat,1 = N06 repeated source block or later exact source address,byte,code/build_lenses.py:row_excluded plus later exact eligible line source addresses,Flag only; no row is deleted. Fixed blocks apply to all row kinds; exact-address rule applies to line rows after block exclusions.
+inpatient_check,"Start plus admitted equals treated: pass, fail, or blank",string,In-patient line: numeric start + admitted = treated within one printed-line scope,"Scope: source_file, sheet, name_key, year, patient_type, population, place, institutions, sex, unit, period_as_printed. Exactly one row per required measure; ambiguous/missing triples stay blank. Flag is attached to all line measures in that scope."

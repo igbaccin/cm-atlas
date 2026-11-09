@@ -1,8 +1,10 @@
 (function () {
   'use strict';
-  const A=window.Atlas;let codebook,checks;
+  const A=window.Atlas;let codebook,checks,assignments;
   A.start(async function (token,current) {
     if(!codebook)[codebook,checks]=await Promise.all([A.get('codebook.csv',true),A.get('checks.csv',true)]);if(!current())return;
+    if(!assignments)assignments=await A.get('report_year_assignments.json');if(!current())return;
+    const undated=A.$('#undated-table');undated.replaceChildren();A.table(undated,[{key:'territory',label:'Territory',render:(td,r)=>td.textContent=A.territoryName(r.territory)},{key:'source_file',label:'Workbook'},{key:'sheet',label:'Sheet'},{key:'proposed_year',label:'Report year (found in the report)',year:true},{key:'confidence',label:'Confidence'},{key:'figures',label:'Disease-line figures',numeric:true},{key:'basis',label:'Evidence',render:(td,r)=>{const d=A.el('details');d.append(A.el('summary',{},'Basis · found in the report'),A.el('p',{},r.basis));td.append(d);}}],assignments);
     const grid=A.$('#sources-coverage');grid.replaceChildren();A.coverageGrid(grid,true);
     const uncoded=A.$('#uncoded-table');uncoded.replaceChildren();const quality=A.meta.quality.map(r=>({...r,territory:A.territoryName(r.territory),share:r.uncoded_share==null?null:r.uncoded_share*100}));
     A.table(uncoded,[{key:'territory',label:'Territory'},{key:'uncoded_figures',label:'Uncoded figures',numeric:true},{key:'line_figures',label:'All printed line figures',numeric:true},{key:'share',label:'Uncoded (%)',numeric:true}],quality);

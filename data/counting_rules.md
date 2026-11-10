@@ -18,7 +18,8 @@ Run made on the laptop. Scope counts refer to a single territory, year, measure 
 | zambia | places_sum_parts | 7083 | 9706 | No printed total; sum the non-overlapping parts. |
 | zambia | institutions_printed_total | 18834 | 18834 | Printed total replaces its parts; numeric totals only. |
 | zambia | institutions_sum_parts | 7818 | 10441 | No printed total; sum the non-overlapping parts. |
-| zambia | population_sum | 21106 | 29275 | All-population margin; broad populations suppress their explicitly identified components. Synthetic all is marked summed when no total exists. |
+| zambia | population_printed_all | 0 | 0 | All-population margin uses its numeric printed total. |
+| zambia | population_sum | 21106 | 29275 | No printed total: sum non-overlapping populations; broad populations suppress their explicitly identified components. |
 | bechuanaland | source_repeat_excluded | 0 | 0 | N15 source_repeat=1: repeated publications excluded from primary cube; optional repeated overlay kept separately. |
 | bechuanaland | non_count_measures_excluded | 1 | 1 | Keep patient/death count measures, including stocks and attendances; no remarks, costs or durations. |
 | bechuanaland | duplicate_address | 0 | 0 | First identical source cell retained. |
@@ -33,7 +34,8 @@ Run made on the laptop. Scope counts refer to a single territory, year, measure 
 | bechuanaland | places_sum_parts | 0 | 0 | No printed total; sum the non-overlapping parts. |
 | bechuanaland | institutions_printed_total | 3461 | 3461 | Printed total replaces its parts; numeric totals only. |
 | bechuanaland | institutions_sum_parts | 21015 | 21015 | No printed total; sum the non-overlapping parts. |
-| bechuanaland | population_printed_all | 24476 | 24476 | All-population margin; broad populations suppress their explicitly identified components. Synthetic all is marked summed when no total exists. |
+| bechuanaland | population_printed_all | 24476 | 24476 | All-population margin uses its numeric printed total. |
+| bechuanaland | population_sum | 0 | 0 | No printed total: sum non-overlapping populations; broad populations suppress their explicitly identified components. |
 | zanzibar | source_repeat_excluded | 6 | 318 | N15 source_repeat=1: repeated publications excluded from primary cube; optional repeated overlay kept separately. |
 | zanzibar | non_count_measures_excluded | 0 | 0 | Keep patient/death count measures, including stocks and attendances; no remarks, costs or durations. |
 | zanzibar | duplicate_address | 0 | 0 | First identical source cell retained. |
@@ -48,8 +50,8 @@ Run made on the laptop. Scope counts refer to a single territory, year, measure 
 | zanzibar | places_sum_parts | 5430 | 5585 | No printed total; sum the non-overlapping parts. |
 | zanzibar | institutions_printed_total | 40189 | 40189 | Printed total replaces its parts; numeric totals only. |
 | zanzibar | institutions_sum_parts | 3750 | 3905 | No printed total; sum the non-overlapping parts. |
-| zanzibar | population_sum | 5568 | 8324 | All-population margin; broad populations suppress their explicitly identified components. Synthetic all is marked summed when no total exists. |
-| zanzibar | population_printed_all | 35770 | 35770 | All-population margin; broad populations suppress their explicitly identified components. Synthetic all is marked summed when no total exists. |
+| zanzibar | population_printed_all | 35770 | 35770 | All-population margin uses its numeric printed total. |
+| zanzibar | population_sum | 5568 | 8324 | No printed total: sum non-overlapping populations; broad populations suppress their explicitly identified components. |
 | uganda | source_repeat_excluded | 20 | 6872 | N15 source_repeat=1: repeated publications excluded from primary cube; optional repeated overlay kept separately. |
 | uganda | non_count_measures_excluded | 36 | 55 | Keep patient/death count measures, including stocks and attendances; no remarks, costs or durations. |
 | uganda | duplicate_address | 0 | 0 | First identical source cell retained. |
@@ -64,8 +66,8 @@ Run made on the laptop. Scope counts refer to a single territory, year, measure 
 | uganda | places_sum_parts | 0 | 0 | No printed total; sum the non-overlapping parts. |
 | uganda | institutions_printed_total | 23406 | 23406 | Printed total replaces its parts; numeric totals only. |
 | uganda | institutions_sum_parts | 30319 | 30319 | No printed total; sum the non-overlapping parts. |
-| uganda | population_printed_all | 42720 | 42720 | All-population margin; broad populations suppress their explicitly identified components. Synthetic all is marked summed when no total exists. |
-| uganda | population_sum | 1926 | 3905 | All-population margin; broad populations suppress their explicitly identified components. Synthetic all is marked summed when no total exists. |
+| uganda | population_printed_all | 42720 | 42720 | All-population margin uses its numeric printed total. |
+| uganda | population_sum | 1926 | 3905 | No printed total: sum non-overlapping populations; broad populations suppress their explicitly identified components. |
 | congo | source_repeat_excluded | 0 | 0 | N15 source_repeat=1: repeated publications excluded from primary cube; optional repeated overlay kept separately. |
 | congo | non_count_measures_excluded | 0 | 0 | Keep patient/death count measures, including stocks and attendances; no remarks, costs or durations. |
 | congo | duplicate_address | 0 | 0 | First identical source cell retained. |
@@ -80,8 +82,8 @@ Run made on the laptop. Scope counts refer to a single territory, year, measure 
 | congo | places_sum_parts | 10 | 60 | No printed total; sum the non-overlapping parts. |
 | congo | institutions_printed_total | 34 | 34 | Printed total replaces its parts; numeric totals only. |
 | congo | institutions_sum_parts | 1404 | 1478 | No printed total; sum the non-overlapping parts. |
-| congo | population_sum | 900 | 1478 | All-population margin; broad populations suppress their explicitly identified components. Synthetic all is marked summed when no total exists. |
-| congo | population_printed_all | 34 | 34 | All-population margin; broad populations suppress their explicitly identified components. Synthetic all is marked summed when no total exists. |
+| congo | population_printed_all | 34 | 34 | All-population margin uses its numeric printed total. |
+| congo | population_sum | 900 | 1478 | No printed total: sum non-overlapping populations; broad populations suppress their explicitly identified components. |
 | gold_coast | source_repeat_excluded | 0 | 0 | N15 source_repeat=1: repeated publications excluded from primary cube; optional repeated overlay kept separately. |
 | gold_coast | non_count_measures_excluded | 13 | 220 | Keep patient/death count measures, including stocks and attendances; no remarks, costs or durations. |
 | gold_coast | duplicate_address | 0 | 0 | First identical source cell retained. |
@@ -96,8 +98,8 @@ Run made on the laptop. Scope counts refer to a single territory, year, measure 
 | gold_coast | places_sum_parts | 4152 | 11472 | No printed total; sum the non-overlapping parts. |
 | gold_coast | institutions_printed_total | 45691 | 45691 | Printed total replaces its parts; numeric totals only. |
 | gold_coast | institutions_sum_parts | 29415 | 36735 | No printed total; sum the non-overlapping parts. |
-| gold_coast | population_printed_all | 73234 | 80554 | All-population margin; broad populations suppress their explicitly identified components. Synthetic all is marked summed when no total exists. |
-| gold_coast | population_sum | 1872 | 1872 | All-population margin; broad populations suppress their explicitly identified components. Synthetic all is marked summed when no total exists. |
+| gold_coast | population_printed_all | 73234 | 80554 | All-population margin uses its numeric printed total. |
+| gold_coast | population_sum | 1872 | 1872 | No printed total: sum non-overlapping populations; broad populations suppress their explicitly identified components. |
 | tanganyika | source_repeat_excluded | 0 | 0 | N15 source_repeat=1: repeated publications excluded from primary cube; optional repeated overlay kept separately. |
 | tanganyika | non_count_measures_excluded | 69 | 9419 | Keep patient/death count measures, including stocks and attendances; no remarks, costs or durations. |
 | tanganyika | duplicate_address | 0 | 0 | First identical source cell retained. |

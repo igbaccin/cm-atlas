@@ -47,7 +47,7 @@
         }),
         fold('Checking the printed arithmetic', 'do the columns add up', async () => {
           const meta = await A.get('meta.json');
-          return [p('Where a report prints patients in hospital at the start of the year, patients admitted and patients treated, the first two should add up to the third. The table counts the figures where they do and where they do not. Nothing is corrected.'),
+          return [p('Where a report prints patients in hospital at the start of the year, patients admitted and patients treated, the first two should add up to the third. The table counts the figures where they do and where they do not. No printed figure is changed. The check has caught one slip so far: in Nyasaland’s tables of 1934 to 1938 the typed headings of deaths and patients treated were exchanged, and they were put back in the order the reports print (10 November 2026).'),
             A.table([{label: 'Territory', render: r => name(r.territory)}, {key: 'inpatient_pass', label: 'Add up', num: true}, {key: 'inpatient_fail', label: 'Do not add up', num: true}, {label: 'Share that fails', num: true, render: r => A.pct(r.inpatient_fail / Math.max(1, r.inpatient_pass + r.inpatient_fail) * 100)}], meta.quality.filter(r => r.inpatient_pass + r.inpatient_fail))];
         }),
         fold('Tables printed twice', 'left out unless you ask', async () => {

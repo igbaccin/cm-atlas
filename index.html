@@ -1,8 +1,20 @@
 <!doctype html>
-<html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><meta name="description" content="Hospital figures as printed in the colonial medical returns. Draft for the authors."><title>Overview · Atlas of disease</title><link rel="stylesheet" href="atlas.css"><script defer src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script><script defer src="https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6.17/dist/plot.umd.min.js"></script><script defer src="atlas.js"></script><script defer src="overview.js"></script></head><body>
-<header><div class="masthead"><div><div class="eyebrow">Nosologies · 1887–1967 · Author draft</div><a class="brand" data-page="index.html" href="index.html">Atlas of disease</a></div><nav aria-label="Atlas pages"><a data-page="index.html" href="index.html" aria-current="page">Overview</a><a data-page="map.html" href="map.html">Map</a><a data-page="territory.html" href="territory.html">Territory</a><a data-page="disease.html" href="disease.html">Disease</a><a data-page="compare.html" href="compare.html">Compare</a><a data-page="sources.html" href="sources.html">Sources</a></nav></div><div id="controls" aria-label="Shared selection"><p class="loading">Loading the selection…</p></div></header><p id="status" role="status" aria-live="polite"></p>
-<main><div class="page-intro"><div><span class="eyebrow">Overview</span><h1>Reading the returns, year by year</h1><p>Eleven territories, 1887–1967. Begin with what survives: patient streams, gaps and the lists used to name disease.</p></div><div class="folio">01 / 06</div></div>
-<section class="panel"><div class="panel-head"><h2>The source landscape</h2><span class="badge" id="overview-count"></span></div><div id="coverage" class="chart"></div><p class="caption">Each square is a report year. Its horizontal stripes show the patient streams present; hatching marks returns with totals and no disease lines. The thin band underneath records the list in force, with a tick at each observed change. Hover for the streams, list and coded-line count; select a square to read that territory and year. Empty squares are absent returns, never zero cases.</p></section>
-<section class="panel"><div class="panel-head"><h2>Eleven territories</h2><span class="eyebrow">An index to the collection</span></div><p class="note">Names follow the returns. Modern names help locate the territories; they do not change the historical coverage. Coded printed figures exclude flagged repeated publications.</p><div id="territory-summary"></div></section>
-</main>
-<footer>Hospital figures as printed in the colonial medical returns, not population rates. Draft for the authors, not for circulation.</footer><noscript><p class="warning">JavaScript is needed to load the atlas figures and selection controls.</p></noscript></body></html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Atlas of disease</title>
+<link rel="stylesheet" href="atlas.css">
+</head>
+<body>
+<header id="site-header"></header>
+<main id="main"><div class="wrap"><p class="loading">Loading…</p></div></main>
+<footer id="site-footer"></footer>
+<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
+<script src="core.js"></script>
+<script src="charts.js"></script>
+<script src="home.js"></script>
+</body>
+</html>

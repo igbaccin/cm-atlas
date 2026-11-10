@@ -198,10 +198,15 @@
       const c = S.codes[key]; if (!c) return null; const g = S.groups[c[1]], cat = S.cats[c[2]];
       return {sel, kind: 'One entry of the classification (' + key + ')', title: c[0], colour: g.colour, match: code => code === key, parent: cat ? {label: cat[0], sel: 'k:' + c[2]} : {label: g.label, sel: 'g:' + g.key}, code: key};
     }
+    if (kind === 'l') {   // an item of a historical list: 'l:list1929:38'
+      const j = key.indexOf(':'), list = key.slice(0, j), item = key.slice(j + 1), L = S.lists.find(x => x.key === list); if (!L) return null;
+      const full = await A.get('codes.json'), at = c => c && c.lists && c.lists[list], sample = Object.values(full).find(c => at(c) && at(c).item === item); if (!sample) return null;
+      return {sel, kind: 'Item ' + item + ' of the list: ' + L.label, title: at(sample).title, colour: '#206c72', scheme: list, match: code => !!at(full[code]) && at(full[code]).item === item};
+    }
     const field = {h: 'histcat', kp: 'group_kippen', pr: 'group_preston', ch: 'chapter'}[kind]; if (!field) return null;
     const full = await A.get('codes.json'), sample = Object.values(full).find(c => c[field] === key); if (!sample) return null;
     const name = {h: 'HistCat group', kp: 'Group in Kippen’s 32', pr: 'Group in Preston’s 12', ch: 'ICD-10 chapter'}[kind];
-    return {sel, kind: name, title: kind === 'ch' ? key + '. ' + sample.chapter_title : key, colour: '#206c72', match: code => !!full[code] && full[code][field] === key};
+    return {sel, kind: name, title: kind === 'ch' ? key + '. ' + sample.chapter_title : key, colour: '#206c72', scheme: {h: 'histcat', kp: 'kippen', pr: 'preston', ch: 'chapter'}[kind], match: code => !!full[code] && full[code][field] === key};
   };
 
   // ---------- interface pieces
@@ -250,7 +255,8 @@
       A.el('a', {class: 'brand', href: 'index.html'}, 'Atlas of disease'),
       A.el('nav', {'aria-label': 'Pages'}, nav.map(([f, label]) => A.el('a', {href: f, 'data-page': f, class: f === A.page ? 'here' : null}, label))),
       A.searchBox('Find a disease or a place')));
-    A.$('#site-footer').replaceChildren(A.el('div', {class: 'wrap'}, 'Hospital figures as printed in the colonial annual medical reports, 1887–1967. They count patients, not rates of disease in the population. Draft for the authors, not for circulation.'));
+    A.$('#site-footer').replaceChildren(A.el('div', {class: 'wrap'}, 'Hospital figures as printed in the colonial annual medical reports, 1887–1967. They count patients, not rates of disease in the population. Draft for the authors, not for circulation.',
+      A.el('p', {style: 'margin-top:6px'}, 'For specialists: ', A.el('a', {href: 'classifications.html'}, 'how diseases are classified, and other classifications'), '.')));
   };
   A.refreshNav = () => document.querySelectorAll('#site-header nav a').forEach(a => { a.href = a.dataset.page === 'index.html' ? 'index.html' : A.url(a.dataset.page, a.dataset.page === A.page ? {} : {y: ''}); });
 
@@ -278,7 +284,7 @@
       }
     });
     if (changed.length) grid.append(A.el('button', {type: 'button', class: 'link', onclick: () => A.set(Object.fromEntries(fields.map(f => [f.key, DEFAULTS[f.key]])))}, 'Back to the standard view'));
-    box.append(grid);
+    box.append(grid, A.el('p', {class: 'caption'}, A.el('a', {href: A.url('classifications.html')}, 'How diseases are classified, and other classifications')));
     return box;
   };
   A.chips = function (fields) {

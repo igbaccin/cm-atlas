@@ -43,6 +43,7 @@
     // heading
     const crumb = A.el('p', {class: 'eyebrow'}, sel.kind);
     if (sel.parent) crumb.append(' · part of ', A.el('a', {href: A.url('disease.html', {d: sel.parent.sel})}, sel.parent.label));
+    if (sel.scheme) crumb.append(' · ', A.el('a', {href: A.url('classifications.html', {by: sel.scheme})}, 'see the whole classification'));
     const page = A.el('div', {class: 'wrap'}, crumb, A.el('h1', {}, sel.title),
       A.el('p', {class: 'lede'}, cap(spec.noun) + ' in ten territories, shown as ' + (share ? 'a share of all ' + spec.noun : 'numbers') + '.'),
       sel.formal ? A.el('p', {class: 'caption'}, sel.formal) : null);

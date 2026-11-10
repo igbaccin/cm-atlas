@@ -39,7 +39,7 @@
         fold('How diseases are grouped', 'the groups behind the colours', async () => [
           p('The standard groups follow HistCat, the grouping that comes with ICD10h and that studies of European causes of death use, with its single group of infectious diseases divided so that malaria, sleeping sickness, leprosy, venereal disease and yaws, worm infections and the childhood infections can each be seen. The grouping is a draft and may change.'),
           A.table([{label: 'Group', render: g => A.el('span', {}, A.el('i', {class: 'swatch', style: 'background:' + g.colour + ';margin-right:8px'}), g.label)}, {key: 'key', label: 'Name in the dataset'}], S.groups),
-          A.el('p', {class: 'caption'}, 'On a place’s page, “More options” regroups the same figures by HistCat, ICD-10 chapters, Kippen’s 32 groups, Preston’s 12 groups, or the items of a historical International List.')]),
+          A.el('p', {class: 'caption'}, 'The same figures can be regrouped by HistCat, ICD-10 chapters, Kippen’s 32 groups, Preston’s 12 groups, or the items of a historical list: see ', A.el('a', {href: 'classifications.html'}, 'Classifications'), ', or “More options” on a place’s page.')]),
         fold('Lines that could not be classified', 'a small remainder', async () => {
           const meta = await A.get('meta.json');
           return [p('A few printed lines name no disease that can be classified. They are kept and shown as “Not classified”.'),

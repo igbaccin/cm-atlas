@@ -13,13 +13,13 @@ Run made on the laptop. Scope counts refer to a single territory, year, measure 
 | zambia | sex_sum_parts | 263 | 522 | No printed total; sum the non-overlapping parts. |
 | zambia | parallel_columns | 0 | 0 | Same printed measure/sex/period: prefer current, patient counts, then leftmost column; do not add overlapping attendances. |
 | zambia | parallel_injury_views | 0 | 0 | Retain nature of injury where both classifications describe the same patients (N06). |
-| zambia | overlapping_publications | 1288 | 1288 | Same printed item/scope/year: current, fullest, then first publication; retain all sex/period components of its row. |
-| zambia | places_printed_total | 19569 | 19569 | Printed total replaces its parts; numeric totals only. |
-| zambia | places_sum_parts | 7083 | 9706 | No printed total; sum the non-overlapping parts. |
-| zambia | institutions_printed_total | 18834 | 18834 | Printed total replaces its parts; numeric totals only. |
-| zambia | institutions_sum_parts | 7818 | 10441 | No printed total; sum the non-overlapping parts. |
+| zambia | overlapping_publications | 1308 | 1308 | Same printed item/scope/year: current, fullest, then first publication; retain all sex/period components of its row. |
+| zambia | places_printed_total | 19549 | 19549 | Printed total replaces its parts; numeric totals only. |
+| zambia | places_sum_parts | 7073 | 9706 | No printed total; sum the non-overlapping parts. |
+| zambia | institutions_printed_total | 18814 | 18814 | Printed total replaces its parts; numeric totals only. |
+| zambia | institutions_sum_parts | 7808 | 10441 | No printed total; sum the non-overlapping parts. |
 | zambia | population_printed_all | 0 | 0 | All-population margin uses its numeric printed total. |
-| zambia | population_sum | 21106 | 29275 | No printed total: sum non-overlapping populations; broad populations suppress their explicitly identified components. |
+| zambia | population_sum | 21014 | 29255 | No printed total: sum non-overlapping populations; broad populations suppress their explicitly identified components. |
 | bechuanaland | source_repeat_excluded | 0 | 0 | N15 source_repeat=1: repeated publications excluded from primary cube; optional repeated overlay kept separately. |
 | bechuanaland | non_count_measures_excluded | 1 | 1 | Keep patient/death count measures, including stocks and attendances; no remarks, costs or durations. |
 | bechuanaland | duplicate_address | 0 | 0 | First identical source cell retained. |
@@ -127,11 +127,11 @@ Run made on the laptop. Scope counts refer to a single territory, year, measure 
 | malawi | parallel_injury_views | 0 | 0 | Retain nature of injury where both classifications describe the same patients (N06). |
 | malawi | overlapping_publications | 217 | 370 | Same printed item/scope/year: current, fullest, then first publication; retain all sex/period components of its row. |
 | malawi | places_printed_total | 41503 | 41503 | Printed total replaces its parts; numeric totals only. |
-| malawi | places_sum_parts | 6422 | 8660 | No printed total; sum the non-overlapping parts. |
+| malawi | places_sum_parts | 6416 | 8660 | No printed total; sum the non-overlapping parts. |
 | malawi | institutions_printed_total | 25926 | 25926 | Printed total replaces its parts; numeric totals only. |
-| malawi | institutions_sum_parts | 21999 | 24237 | No printed total; sum the non-overlapping parts. |
+| malawi | institutions_sum_parts | 21993 | 24237 | No printed total; sum the non-overlapping parts. |
 | malawi | population_printed_all | 5730 | 6092 | All-population margin uses its numeric printed total. |
-| malawi | population_sum | 38416 | 43081 | No printed total: sum non-overlapping populations; broad populations suppress their explicitly identified components. |
+| malawi | population_sum | 38382 | 43081 | No printed total: sum non-overlapping populations; broad populations suppress their explicitly identified components. |
 | sierra_leone | source_repeat_excluded | 4 | 2208 | N15 source_repeat=1: repeated publications excluded from primary cube; optional repeated overlay kept separately. |
 | sierra_leone | non_count_measures_excluded | 3 | 85 | Keep patient/death count measures, including stocks and attendances; no remarks, costs or durations. |
 | sierra_leone | duplicate_address | 0 | 0 | First identical source cell retained. |
@@ -141,13 +141,13 @@ Run made on the laptop. Scope counts refer to a single territory, year, measure 
 | sierra_leone | sex_sum_parts | 23492 | 62463 | No printed total; sum the non-overlapping parts. |
 | sierra_leone | parallel_columns | 7790 | 15933 | Same printed measure/sex/period: prefer current, patient counts, then leftmost column; do not add overlapping attendances. |
 | sierra_leone | parallel_injury_views | 24 | 624 | Retain nature of injury where both classifications describe the same patients (N06). |
-| sierra_leone | overlapping_publications | 623 | 1108 | Same printed item/scope/year: current, fullest, then first publication; retain all sex/period components of its row. |
+| sierra_leone | overlapping_publications | 639 | 1140 | Same printed item/scope/year: current, fullest, then first publication; retain all sex/period components of its row. |
 | sierra_leone | places_printed_total | 57633 | 57633 | Printed total replaces its parts; numeric totals only. |
-| sierra_leone | places_sum_parts | 27434 | 38171 | No printed total; sum the non-overlapping parts. |
+| sierra_leone | places_sum_parts | 27339 | 38139 | No printed total; sum the non-overlapping parts. |
 | sierra_leone | institutions_printed_total | 0 | 0 | Printed total replaces its parts; numeric totals only. |
-| sierra_leone | institutions_sum_parts | 85067 | 95804 | No printed total; sum the non-overlapping parts. |
-| sierra_leone | population_printed_all | 18406 | 20348 | All-population margin uses its numeric printed total. |
-| sierra_leone | population_sum | 41729 | 74652 | No printed total: sum non-overlapping populations; broad populations suppress their explicitly identified components. |
+| sierra_leone | institutions_sum_parts | 84972 | 95772 | No printed total; sum the non-overlapping parts. |
+| sierra_leone | population_printed_all | 18391 | 20348 | All-population margin uses its numeric printed total. |
+| sierra_leone | population_sum | 41683 | 74612 | No printed total: sum non-overlapping populations; broad populations suppress their explicitly identified components. |
 | kenya | source_repeat_excluded | 0 | 0 | N15 source_repeat=1: repeated publications excluded from primary cube; optional repeated overlay kept separately. |
 | kenya | non_count_measures_excluded | 4 | 114 | Keep patient/death count measures, including stocks and attendances; no remarks, costs or durations. |
 | kenya | duplicate_address | 0 | 0 | First identical source cell retained. |
@@ -163,7 +163,7 @@ Run made on the laptop. Scope counts refer to a single territory, year, measure 
 | kenya | institutions_printed_total | 0 | 0 | Printed total replaces its parts; numeric totals only. |
 | kenya | institutions_sum_parts | 147262 | 189175 | No printed total; sum the non-overlapping parts. |
 | kenya | population_printed_all | 1012 | 1012 | All-population margin uses its numeric printed total. |
-| kenya | population_sum | 53474 | 180619 | No printed total: sum non-overlapping populations; broad populations suppress their explicitly identified components. |
+| kenya | population_sum | 53461 | 180607 | No printed total: sum non-overlapping populations; broad populations suppress their explicitly identified components. |
 | nigeria | source_repeat_excluded | 49 | 6048 | N15 source_repeat=1: repeated publications excluded from primary cube; optional repeated overlay kept separately. |
 | nigeria | non_count_measures_excluded | 23 | 2930 | Keep patient/death count measures, including stocks and attendances; no remarks, costs or durations. |
 | nigeria | duplicate_address | 0 | 0 | First identical source cell retained. |
@@ -173,13 +173,13 @@ Run made on the laptop. Scope counts refer to a single territory, year, measure 
 | nigeria | sex_sum_parts | 16703 | 33406 | No printed total; sum the non-overlapping parts. |
 | nigeria | parallel_columns | 1698 | 1698 | Same printed measure/sex/period: prefer current, patient counts, then leftmost column; do not add overlapping attendances. |
 | nigeria | parallel_injury_views | 27 | 543 | Retain nature of injury where both classifications describe the same patients (N06). |
-| nigeria | overlapping_publications | 15773 | 15827 | Same printed item/scope/year: current, fullest, then first publication; retain all sex/period components of its row. |
-| nigeria | places_printed_total | 131662 | 142471 | Printed total replaces its parts; numeric totals only. |
-| nigeria | places_sum_parts | 5495 | 62198 | No printed total; sum the non-overlapping parts. |
+| nigeria | overlapping_publications | 15763 | 15817 | Same printed item/scope/year: current, fullest, then first publication; retain all sex/period components of its row. |
+| nigeria | places_printed_total | 131628 | 142453 | Printed total replaces its parts; numeric totals only. |
+| nigeria | places_sum_parts | 5492 | 62226 | No printed total; sum the non-overlapping parts. |
 | nigeria | institutions_printed_total | 0 | 0 | Printed total replaces its parts; numeric totals only. |
-| nigeria | institutions_sum_parts | 137157 | 204669 | No printed total; sum the non-overlapping parts. |
-| nigeria | population_printed_all | 22271 | 81322 | All-population margin uses its numeric printed total. |
-| nigeria | population_sum | 72264 | 122285 | No printed total: sum non-overlapping populations; broad populations suppress their explicitly identified components. |
+| nigeria | institutions_sum_parts | 137120 | 204679 | No printed total; sum the non-overlapping parts. |
+| nigeria | population_printed_all | 22250 | 81332 | All-population margin uses its numeric printed total. |
+| nigeria | population_sum | 72153 | 122285 | No printed total: sum non-overlapping populations; broad populations suppress their explicitly identified components. |
 
 A printed total with value zero is present and takes precedence. Missing totals do not displace numeric parts. An unlabelled or not-separated margin is treated as the total of its scope. Parallel columns/publications and dual injury classifications use the conservative N06 preference. Broad non-European population margins suppress African/Asian components in the synthetic all view; named populations remain available separately. Different measures remain separate. No admissions/treated fallback is applied because the atlas exposes each measure itself. No missing source value is made zero.
 

@@ -8,8 +8,15 @@
   A.run('place.html', async function (alive) {
     const S = A.S, st = A.state, main = A.$('#main');
     const t = S.T[st.p] ? st.p : 'nigeria', T = S.T[t], spec = A.spec(), view = st.v || 'share';
-    const fields = A.countFields().concat([
-      {key: 'pop', label: 'People', options: [['all', 'Everyone']].concat(T.pops.map(p => [p, p + ' (as printed)']))},
+    // offer only what this territory has figures for: its counts, and the people and sexes of the count on screen;
+    // a choice left over from another territory or count falls back to the standard one
+    if (T.counts && T.counts.length && !T.counts.includes(st.n)) { A.set({n: T.counts.includes('in') ? 'in' : T.counts[0], m: ''}); return; }
+    const pops = T.pops_by ? (T.pops_by[st.n] || []) : T.pops, sexes = T.sexes_by ? (T.sexes_by[st.n] || []) : [];
+    if (st.pop !== 'all' && T.pops_by && !pops.includes(st.pop)) { A.set({pop: 'all'}); return; }
+    if (st.sx && !sexes.includes(st.sx)) { A.set({sx: ''}); return; }
+    const fields = A.countFields(T.counts).concat([
+      {key: 'pop', label: 'People', options: [['all', 'Everyone']].concat(pops.map(p => [p, p + ' (as printed)']))},
+      ...(sexes.length ? [A.sexField()] : []),
       {key: 'by', label: 'Group diseases by', options: A.BY.concat(S.lists.map(l => [l.key, 'Historical list: ' + l.label]))},
       {key: 'lc', label: 'Mark changes of the official list of diseases', check: true, chip: 'List changes hidden'},
       {key: 'rep', label: 'Include tables that repeat an earlier report', check: true, chip: 'Repeated tables included'}
@@ -27,7 +34,8 @@
       main.replaceChildren(page); return;
     }
     const first = data.years[0], last = data.years[data.years.length - 1];
-    page.append(A.el('p', {class: 'lede'}, cap(spec.noun) + ' by disease, ' + first + ' to ' + last + '.' + (data.printed ? ' The reports of the ' + T.name + ' give broad groups of diseases only, shown here as printed.' : '')));
+    page.append(A.el('p', {class: 'lede'}, cap(spec.noun) + ' by disease, ' + first + ' to ' + last + '.' + (data.printed ? ' The reports of the ' + T.name + ' give broad groups of diseases only, shown here as printed.' : '')
+      + (data.partial && data.partial.length ? ' Left out: ' + data.partial.join(', ') + ', where only some tables print men and women apart, or the two do not add up to the printed total.' : '')));
 
     // layers: the largest groups, the rest together
     const byGroup = new Map();

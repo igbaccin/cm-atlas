@@ -35,8 +35,8 @@
   A.BY = [['african', 'Disease groups (standard)'], ['histcat', 'HistCat groups'], ['chapter', 'ICD-10 chapters'], ['kippen', 'Kippen’s 32 groups'], ['preston', 'Preston’s 12 groups']];
 
   // ---------- the selection, kept in the page address; only what differs from the standard view is written
-  const DEFAULTS = {p: '', d: 'g:Malaria', y: '', v: '', sc: 'share', n: 'in', m: '', pop: 'all', by: 'african', log: '0', avg: '0', lc: '1', rep: '0', all: '0', own: '0', mode: 'year'};
-  const CARRIED = ['n', 'm', 'pop', 'by', 'log', 'avg', 'lc', 'rep', 'sc', 'p', 'd'];
+  const DEFAULTS = {p: '', d: 'g:Malaria', y: '', v: '', sc: 'share', n: 'in', m: '', pop: 'all', sx: '', by: 'african', log: '0', avg: '0', lc: '1', rep: '0', all: '0', own: '0', mode: 'year'};
+  const CARRIED = ['n', 'm', 'pop', 'sx', 'by', 'log', 'avg', 'lc', 'rep', 'sc', 'p', 'd'];
   A.DEFAULTS = DEFAULTS;
   A.read = function () {
     const p = new URLSearchParams(location.hash.slice(1)), s = {...DEFAULTS};
@@ -77,8 +77,8 @@
     const load = async f => { const r = await fetch(stamped(f)); if (!r.ok) throw new Error(f + ': HTTP ' + r.status); return r.json(); };
     const base = await load(t + '.json');
     if (base.parts) {
-      for (const k of ['cells', 'repeat_cells', 'names']) base[k] = [];
-      for (const f of base.parts) { const p = await load(f); for (const k of ['cells', 'repeat_cells', 'names']) base[k] = base[k].concat(p[k] || []); }
+      for (const k of ['cells', 'repeat_cells', 'names', 'sex_cells', 'sex_repeat_cells']) base[k] = [];
+      for (const f of base.parts) { const p = await load(f); for (const k of ['cells', 'repeat_cells', 'names', 'sex_cells', 'sex_repeat_cells']) base[k] = base[k].concat(p[k] || []); }
     }
     fullKey = t; fullData = base;
     return base;
@@ -88,9 +88,13 @@
     let order = c.order;
     if (st.n === 'in' && st.m === 'admitted') order = ['admitted during year'];
     if (st.n === 'in' && st.m === 'treated') order = ['treated during year'];
+    if (st.sx === 'male' || st.sx === 'female') {   // men or women alone, where a report prints them apart
+      const who = st.sx === 'male' ? 'men' : 'women';
+      return {...c, order, label: c.label + ' (' + who + ')', noun: c.noun + ' among ' + who};
+    }
     return {...c, order};
   };
-  A.isQuick = (st = A.state) => ['in', 'died', 'out'].includes(st.n) && !st.m && st.pop === 'all' && st.rep !== '1';
+  A.isQuick = (st = A.state) => ['in', 'died', 'out'].includes(st.n) && !st.m && st.pop === 'all' && st.rep !== '1' && !st.sx;
   const quickCache = new Map();
   const EMPTY = () => ({years: [], basis: new Map(), rows: [], printed: null});
 
@@ -108,7 +112,9 @@
     const sis = spec.streams.map(s => b.streams.indexOf(s)).filter(i => i >= 0);
     const mis = spec.order.map(m => b.measures.indexOf(m)).filter(i => i >= 0);
     if (pi < 0 || !sis.length || !mis.length) return EMPTY();
-    const cells = st.rep === '1' ? b.cells.concat(b.repeat_cells || []) : b.cells;
+    const sx = st.sx === 'male' ? 0 : st.sx === 'female' ? 1 : -1;   // sex cells end with 0 (men) or 1 (women)
+    const cells = sx < 0 ? (st.rep === '1' ? b.cells.concat(b.repeat_cells || []) : b.cells)
+      : (st.rep === '1' ? (b.sex_cells || []).concat(b.sex_repeat_cells || []) : (b.sex_cells || [])).filter(r => r[7] === sx);
     const byYear = new Map();
     for (const r of cells) {
       if (r[2] !== pi || !sis.includes(r[1]) || !mis.includes(r[3])) continue;
@@ -116,9 +122,19 @@
       let a = m.get(r[3]); if (!a) m.set(r[3], a = []);
       a.push(r);
     }
-    const out = EMPTY();
+    // men or women alone: only the years whose tables all print the sexes apart, that is men + women within 5% of the
+    // both-sexes figure (other years print only some tables by sex, or their columns do not add up to the total)
+    let whole = () => true;
+    if (sx >= 0) {
+      const sums = list => { const s = new Map(); for (const r of list) if (r[2] === pi && sis.includes(r[1])) { const k = r[0] + '|' + r[3]; s.set(k, (s.get(k) || 0) + r[5]); } return s; };
+      const both = sums(st.rep === '1' ? b.cells.concat(b.repeat_cells || []) : b.cells);
+      const apart = sums(st.rep === '1' ? (b.sex_cells || []).concat(b.sex_repeat_cells || []) : (b.sex_cells || []));
+      whole = (yi, mi) => { const a = both.get(yi + '|' + mi) || 0, s = apart.get(yi + '|' + mi) || 0; return a > 0 && s >= 0.95 * a && s <= 1.05 * a; };
+    }
+    const out = EMPTY(); out.partial = [];
     [...byYear.keys()].sort((x, y) => x - y).forEach(yi => {
       const m = byYear.get(yi), mi = mis.find(i => m.has(i)), year = b.years[yi], sum = new Map();
+      if (!whole(yi, mi)) { out.partial.push(year); return; }
       for (const r of m.get(mi)) sum.set(r[4], (sum.get(r[4]) || 0) + r[5]);
       let any = false;
       for (const [ci, v] of sum) if (v) { out.rows.push({year, code: b.codes[ci], value: v}); any = true; }
@@ -305,11 +321,12 @@
       return A.el('span', {class: 'chip'}, text, A.el('button', {type: 'button', title: 'Remove this option', 'aria-label': 'Remove: ' + text, onclick: () => A.set({[f.key]: DEFAULTS[f.key]})}, '×'));
     }));
   };
-  A.countFields = function () {   // the choices shared by the Place and Disease pages
-    const f = [{key: 'n', label: 'Patients counted', options: Object.entries(A.COUNTS).map(([k, c]) => [k, c.label]), also: {m: ''}}];
+  A.countFields = function (counts) {   // the choices shared by the Place and Disease pages; counts: the ones with figures
+    const f = [{key: 'n', label: 'Patients counted', options: Object.entries(A.COUNTS).filter(([k]) => !counts || counts.includes(k)).map(([k, c]) => [k, c.label]), also: {m: ''}}];
     if (A.state.n === 'in') f.push({key: 'm', label: 'In-patient figure used', options: [['', 'Admitted, or treated where admissions are not printed'], ['admitted', 'Admitted during the year only'], ['treated', 'Treated during the year only']]});
     return f;
   };
+  A.sexField = () => ({key: 'sx', label: 'Sex', options: [['', 'Both sexes'], ['male', 'Men, where printed apart'], ['female', 'Women, where printed apart']]});
 
   // tooltip
   let tip;

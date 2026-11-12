@@ -17,18 +17,19 @@
     const S = A.S, main = A.$('#main'), name = k => (S.T[k] || {name: k}).name;
     const know = [
       ['These are hospital patients, not rates of disease.', 'A rise can mean more disease, or simply more hospitals and more people using them. Shares of all cases are the safer comparison, so the atlas shows shares first.'],
+      ['What a year covers can change.', 'Some reports print one table for the whole territory, others a table for each hospital, district or region, which the atlas adds up. Some years add mission and voluntary hospitals, dispensaries, prisons or clinics. A jump can come from what the returns cover rather than from disease.'],
       ['Blank years are missing reports, not years without disease.', 'Nothing is filled in or estimated.'],
       ['The official list of diseases changed several times.', 'When a territory adopted a new list, cases could move from one line to another. The charts mark those years with ▾; a jump at a mark deserves caution.'],
-      ['One count per year.', 'In-patient cases are the admissions of the year where the report prints them, and the patients treated during the year where it does not. Point at a year to see which.'],
+      ['One count per year.', 'In-patient cases are the admissions of the year where a table prints them, and the patients treated during the year where it does not; a year can add tables of both kinds. Point at a year to see which.'],
       ['The Belgian Congo is different.', 'Its reports give broad groups of diseases only, so it has a page of its own but is absent from the comparisons of single diseases.']
     ];
     main.replaceChildren(A.el('div', {class: 'wrap'},
       A.el('h1', {}, 'About the data'),
       A.el('p', {class: 'lede'}, 'Where the numbers come from, and what to keep in mind when reading them.'),
       A.el('section', {class: 'panel prose'}, A.el('h2', {}, 'What this is'),
-        p('Colonial medical departments published a report every year. Each report printed tables of the diseases treated in government hospitals: how many patients were admitted, treated and died, disease by disease.'),
+        p('Colonial medical departments published a report every year. Each report printed tables of the diseases treated in its hospitals and dispensaries, disease by disease: the in-patients admitted, treated and dying, and the out-patients treated. Most tables are of government hospitals; in some years the reports also print mission and voluntary hospitals, prisons or clinics, and the atlas adds them where they are printed.'),
         p('This atlas brings those tables together for eleven territories, from 1887 to 1967: about 1.4 million printed figures. Every printed disease name has been matched to one code of ICD10h, the historical version of the International Classification of Diseases, so that a disease can be followed across territories and years whatever a report called it.')),
-      A.el('section', {class: 'panel'}, A.el('h2', {}, 'Five things to know'),
+      A.el('section', {class: 'panel'}, A.el('h2', {}, 'Six things to know'),
         A.el('ul', {class: 'know'}, know.map(([b, t]) => A.el('li', {}, A.el('b', {}, b), t)))),
       A.el('section', {class: 'panel'}, A.el('h2', {}, 'The detail'), A.el('p', {class: 'sub'}, 'Open a line to read more.'),
         fold('Years and tables covered', 'which years each territory has', async () => {
@@ -62,7 +63,8 @@
         }),
         fold('How each printed figure is counted once', 'totals, parts and overlapping columns', async () => {
           const meta = await A.get('meta.json');
-          return [p('Reports often print a total beside its parts: all hospitals and each hospital, both sexes and each sex, the year and its months. The atlas takes the printed total where there is one and adds the parts where there is not, and never adds a total to its parts.'),
+          return [p('Reports often print a total beside its parts: all hospitals and each hospital, both sexes and each sex, the year and its months. The atlas takes the printed total where there is one and adds the parts where there is not, and never adds a total to its parts. A total over every kind of hospital, such as Tanganyika’s “Territorial” beside its government and mission hospitals, replaces them all. A year printed again in a later report, or the same patients printed in a second table, is counted once (see “Tables printed twice”). Each table is counted in its own measure, so that a year adds a region that prints admissions to one that prints only the patients treated.'),
+            p('Corrected on 12 November 2026: until then the atlas counted Tanganyika’s figures of 1952 to 1967 twice, and those of Nigeria 1920–1922, Uganda 1928–1929, the Belgian Congo 1940 and Tanganyika 1924 (in- and out-patients together) two or three times; Nigeria 1958–1959, Sierra Leone 1907–1909 and Nyasaland 1912 had lost tables printed in another measure. Shares of cases were hardly affected; numbers of cases were.'),
             A.table([{label: 'Territory', render: r => name(r.territory)}, {key: 'rule', label: 'Rule'}, {key: 'scopes', label: 'Times applied', num: true}, {key: 'figures', label: 'Figures', num: true}, {key: 'note', label: 'What it does'}], meta.counting_rules.filter(r => r.scopes))];
         }),
         fold('The columns of the dataset', 'for those who will use the files', async () => {

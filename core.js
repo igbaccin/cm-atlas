@@ -24,10 +24,12 @@
 
   // ---------- what can be counted, in plain words
   A.COUNTS = {
-    in: {label: 'In-patients', noun: 'in-patient cases', short: 'Cases', streams: ['in-patients'], order: ['admitted during year', 'treated during year']},
+    // 'count: …' is each printed table's own figure (admissions where the table prints them, else patients treated, and the
+    // other way round for out-patients), so that a year whose tables print different measures counts every table
+    in: {label: 'In-patients', noun: 'in-patient cases', short: 'Cases', streams: ['in-patients'], order: ['count: admitted, else treated', 'admitted during year', 'treated during year']},
     died: {label: 'Deaths in hospital', noun: 'deaths in hospital', short: 'Deaths', streams: ['in-patients'], order: ['died']},
-    out: {label: 'Out-patients', noun: 'out-patient cases', short: 'Cases', streams: ['out-patients'], order: ['treated during year', 'admitted during year']},
-    both: {label: 'In- and out-patients together', noun: 'cases (in- and out-patients together)', short: 'Cases', streams: ['both', 'in-patients and out-patients', 'in-patients and out-patients (not separated)', 'not separated'], order: ['treated during year', 'admitted during year']},
+    out: {label: 'Out-patients', noun: 'out-patient cases', short: 'Cases', streams: ['out-patients'], order: ['count: treated, else admitted', 'treated during year', 'admitted during year']},
+    both: {label: 'In- and out-patients together', noun: 'cases (in- and out-patients together)', short: 'Cases', streams: ['both', 'in-patients and out-patients', 'in-patients and out-patients (not separated)', 'not separated'], order: ['count: treated, else admitted', 'treated during year', 'admitted during year']},
     deaths: {label: 'Deaths, from separate death tables', noun: 'deaths', short: 'Deaths', streams: ['deaths'], order: ['died']}
   };
   A.BY = [['african', 'Disease groups (standard)'], ['histcat', 'HistCat groups'], ['chapter', 'ICD-10 chapters'], ['kippen', 'Kippen’s 32 groups'], ['preston', 'Preston’s 12 groups']];
@@ -120,12 +122,20 @@
       for (const r of m.get(mi)) sum.set(r[4], (sum.get(r[4]) || 0) + r[5]);
       let any = false;
       for (const [ci, v] of sum) if (v) { out.rows.push({year, code: b.codes[ci], value: v}); any = true; }
-      if (any) { out.years.push(year); out.basis.set(year, b.measures[mi][0]); }
+      if (any) { out.years.push(year); out.basis.set(year, A.yearBasis(b, mi, sis, pi, year)); }
     });
     if (b.printed_groups && Object.keys(b.printed_groups).length) out.printed = b.printed_groups;
     return out;
   };
-  A.basisWord = f => f === 'a' ? 'admitted during the year' : f === 't' ? 'treated during the year' : f === 'd' ? 'died' : '';
+  // which printed measure a year's count rests on: a, t, d, or m where its tables differ (count_basis from the builder)
+  A.yearBasis = function (b, mi, sis, pi, year) {
+    const m = b.measures[mi];
+    if (!m.startsWith('count:')) return m[0];
+    const by = (b.count_basis || {})[m] || {}, pop = b.populations[pi], got = new Set();
+    for (const si of sis) { const f = ((by[b.streams[si]] || {})[pop] || {})[year]; if (f) got.add(f); }
+    return got.size === 1 ? [...got][0] : got.size ? 'm' : '';
+  };
+  A.basisWord = f => f === 'a' ? 'admitted during the year' : f === 't' ? 'treated during the year' : f === 'd' ? 'died' : f === 'm' ? 'admitted, or treated where a table prints no admissions' : '';
 
   // ---------- grouping codes: returns a function (code, year) -> {key, label, colour, sel}
   const lensCache = new Map();

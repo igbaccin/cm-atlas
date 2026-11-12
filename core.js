@@ -35,8 +35,8 @@
   A.BY = [['african', 'Disease groups (standard)'], ['histcat', 'HistCat groups'], ['chapter', 'ICD-10 chapters'], ['kippen', 'Kippen’s 32 groups'], ['preston', 'Preston’s 12 groups']];
 
   // ---------- the selection, kept in the page address; only what differs from the standard view is written
-  const DEFAULTS = {p: '', d: 'g:Malaria', y: '', v: '', sc: 'share', n: 'in', m: '', pop: 'all', sx: '', by: 'african', log: '0', avg: '0', lc: '1', rep: '0', all: '0', own: '0', mode: 'year'};
-  const CARRIED = ['n', 'm', 'pop', 'sx', 'by', 'log', 'avg', 'lc', 'rep', 'sc', 'p', 'd'];
+  const DEFAULTS = {p: '', d: 'g:Malaria', y: '', v: '', sc: 'share', n: 'in', m: '', pop: 'all', sx: '', fac: '', by: 'african', log: '0', avg: '0', lc: '1', rep: '0', all: '0', own: '0', mode: 'year'};
+  const CARRIED = ['n', 'm', 'pop', 'sx', 'fac', 'by', 'log', 'avg', 'lc', 'rep', 'sc', 'p', 'd'];
   A.DEFAULTS = DEFAULTS;
   A.read = function () {
     const p = new URLSearchParams(location.hash.slice(1)), s = {...DEFAULTS};
@@ -77,8 +77,8 @@
     const load = async f => { const r = await fetch(stamped(f)); if (!r.ok) throw new Error(f + ': HTTP ' + r.status); return r.json(); };
     const base = await load(t + '.json');
     if (base.parts) {
-      for (const k of ['cells', 'repeat_cells', 'names', 'sex_cells', 'sex_repeat_cells']) base[k] = [];
-      for (const f of base.parts) { const p = await load(f); for (const k of ['cells', 'repeat_cells', 'names', 'sex_cells', 'sex_repeat_cells']) base[k] = base[k].concat(p[k] || []); }
+      for (const k of ['cells', 'repeat_cells', 'names', 'sex_cells', 'sex_repeat_cells', 'fac_cells']) base[k] = [];
+      for (const f of base.parts) { const p = await load(f); for (const k of ['cells', 'repeat_cells', 'names', 'sex_cells', 'sex_repeat_cells', 'fac_cells']) base[k] = base[k].concat(p[k] || []); }
     }
     fullKey = t; fullData = base;
     return base;
@@ -88,13 +88,24 @@
     let order = c.order;
     if (st.n === 'in' && st.m === 'admitted') order = ['admitted during year'];
     if (st.n === 'in' && st.m === 'treated') order = ['treated during year'];
+    if (A.FAC[st.fac]) {   // one choice of facilities (brief N23)
+      const f = A.FAC[st.fac];
+      return {...c, order, label: c.label + ' (' + f.short + ')', noun: c.noun + ', ' + f.noun};
+    }
     if (st.sx === 'male' || st.sx === 'female') {   // men or women alone, where a report prints them apart
       const who = st.sx === 'male' ? 'men' : 'women';
       return {...c, order, label: c.label + ' (' + who + ')', noun: c.noun + ' among ' + who};
     }
     return {...c, order};
   };
-  A.isQuick = (st = A.state) => ['in', 'died', 'out'].includes(st.n) && !st.m && st.pop === 'all' && st.rep !== '1' && !st.sx;
+  A.isQuick = (st = A.state) => ['in', 'died', 'out'].includes(st.n) && !st.m && st.pop === 'all' && st.rep !== '1' && !st.sx && !st.fac;
+  // the facility choices (brief N23): gov and nodisp leave kinds out of the standard view, disp and mission keep one kind
+  A.FAC = {
+    gov: {i: 0, short: 'no mission or other services', noun: 'without mission, voluntary, prison, army and other services printed apart', option: 'Without mission, voluntary, prison, army and other services printed apart'},
+    nodisp: {i: 1, short: 'no dispensaries apart', noun: 'without dispensaries printed apart', option: 'Without dispensaries printed apart'},
+    disp: {i: 2, short: 'dispensaries apart', noun: 'in dispensaries printed apart', option: 'Dispensaries printed apart, only'},
+    mission: {i: 3, short: 'mission and voluntary', noun: 'in mission and voluntary hospitals printed apart', option: 'Mission and voluntary hospitals printed apart, only'}
+  };
   const quickCache = new Map();
   const EMPTY = () => ({years: [], basis: new Map(), rows: [], printed: null});
 
@@ -112,8 +123,14 @@
     const sis = spec.streams.map(s => b.streams.indexOf(s)).filter(i => i >= 0);
     const mis = spec.order.map(m => b.measures.indexOf(m)).filter(i => i >= 0);
     if (pi < 0 || !sis.length || !mis.length) return EMPTY();
-    const sx = st.sx === 'male' ? 0 : st.sx === 'female' ? 1 : -1;   // sex cells end with 0 (men) or 1 (women)
-    const cells = sx < 0 ? (st.rep === '1' ? b.cells.concat(b.repeat_cells || []) : b.cells)
+    const fac = A.FAC[st.fac];   // a facility choice: its own cells where it changes a year, the standard ones elsewhere
+    const sx = fac ? -1 : st.sx === 'male' ? 0 : st.sx === 'female' ? 1 : -1;   // sex cells end with 0 (men) or 1 (women)
+    let cells;
+    if (fac) {
+      const own = (b.fac_cells || []).filter(r => r[7] === fac.i);
+      if (fac.i < 2) { const changed = new Set((b.fac_years || {})[st.fac] || []); cells = b.cells.filter(r => !changed.has(b.years[r[0]])).concat(own); }
+      else cells = own;
+    } else cells = sx < 0 ? (st.rep === '1' ? b.cells.concat(b.repeat_cells || []) : b.cells)
       : (st.rep === '1' ? (b.sex_cells || []).concat(b.sex_repeat_cells || []) : (b.sex_cells || [])).filter(r => r[7] === sx);
     const byYear = new Map();
     for (const r of cells) {
@@ -327,6 +344,7 @@
     return f;
   };
   A.sexField = () => ({key: 'sx', label: 'Sex', options: [['', 'Both sexes'], ['male', 'Men, where printed apart'], ['female', 'Women, where printed apart']]});
+  A.facField = keys => ({key: 'fac', label: 'Facilities', options: [['', 'All, as printed']].concat(Object.entries(A.FAC).filter(([k]) => !keys || keys.includes(k)).map(([k, f]) => [k, f.option]))});
 
   // tooltip
   let tip;

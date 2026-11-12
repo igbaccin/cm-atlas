@@ -14,6 +14,7 @@
     const fields = A.countFields().concat([
       {key: 'pop', label: 'People', options: [['all', 'Everyone'], ['African', 'Africans, where printed separately'], ['European', 'Europeans, where printed separately']]},
       A.sexField(),
+      A.facField(),
       {key: 'own', label: 'Give each territory its own scale', check: true, chip: 'Own scale for each territory'},
       {key: 'avg', label: 'Smooth with a three-year average', check: true, chip: 'Three-year average'},
       {key: 'log', label: 'Logarithmic scale on the one-chart view', check: true, chip: 'Logarithmic scale'},

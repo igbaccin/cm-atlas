@@ -17,7 +17,27 @@
     });
   }
 
-  // Stacked columns, one per year. o: {years, layers:[{label, colour, values: Map}], mode:'share'|'count', seams, selected, onPick, tip(year,total), noun, label}
+  // what each year's figures cover (brief N23): a strip under the columns, coloured by how the year was put together
+  const LEVEL_CLASS = {'one return': 'lv-one', 'parts added up': 'lv-parts', 'regional reports added': 'lv-reg', 'one institution': 'lv-inst'};
+  function levelStrip(svg, levels, x, top, height) {
+    levels.forEach((lv, yr) => {
+      if (x(yr) == null) return;
+      svg.append('rect').attr('class', 'lv ' + (LEVEL_CLASS[lv.s] || 'lv-unknown')).attr('x', x(yr)).attr('width', x.bandwidth()).attr('y', top).attr('height', height)
+        .on('pointermove', e => A.tipShow(e, '<b>' + yr + '</b> · ' + A.esc(lv.t))).on('pointerleave', A.tipHide);
+    });
+  }
+  // a change of coverage: a small diamond above the year, its words on hover
+  function coverMarks(svg, marks, xOf, top) {
+    marks.forEach(s => {
+      const x = xOf(s.year); if (x == null) return;
+      const g = svg.append('g').attr('class', 'cover-mark');
+      g.append('path').attr('d', 'M' + x + ',' + (top - 27) + 'l5,5l-5,5l-5,-5z');
+      g.append('rect').attr('x', x - 8).attr('y', top - 29).attr('width', 16).attr('height', 14).attr('fill', 'transparent')
+        .on('pointermove', e => A.tipShow(e, A.esc(s.text))).on('pointerleave', A.tipHide);
+    });
+  }
+
+  // Stacked columns, one per year. o: {years, layers:[{label, colour, values: Map}], mode:'share'|'count', seams, levels, covers, selected, onPick, tip(year,total), noun, label}
   C.columns = function (node, o) {
     const W = 1100, H = 420, m = {l: 54, r: 12, t: 30, b: 30};
     const first = o.years[0], last = o.years[o.years.length - 1], share = o.mode === 'share';
@@ -49,6 +69,8 @@
         .on('click', () => o.onPick && o.onPick(yr)).on('keydown', e => { if (e.key === 'Enter' && o.onPick) o.onPick(yr); });
     });
     seamMarks(svg, o.seams || [], yr => yr > first && yr <= last ? x(yr) - gap / 2 : null, m.t, H - m.b, true);
+    if (o.levels && o.levels.size) levelStrip(svg, o.levels, x, H - m.b + 3, 5);
+    if (o.covers && o.covers.length) coverMarks(svg, o.covers, yr => yr >= first && yr <= last ? x(yr) + x.bandwidth() / 2 : null, m.t);
     node.append(svg.node());
   };
 

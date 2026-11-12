@@ -90,6 +90,8 @@ svg text{font:12px system-ui,sans-serif;fill:#52605f}
 .seam line{stroke:#202d30;stroke-dasharray:2 3;stroke-width:1}
 .seam path{fill:#202d30}
 .seam{cursor:help}
+.lv{cursor:help}.lv-one{fill:#9aa39e}.lv-parts{fill:#d0a344}.lv-reg{fill:#5b8db8}.lv-inst{fill:#c0603d}.lv-unknown{fill:#dfe3df}
+.cover-mark{cursor:help}.cover-mark path{fill:#8a6f91}
 .tip{position:fixed;z-index:50;pointer-events:none;background:#202d30;color:#fff;border-radius:8px;padding:9px 12px;font-size:13.5px;line-height:1.45;max-width:340px;box-shadow:0 6px 20px rgba(0,0,0,.25)}
 .tip b{font-weight:600}
 .tip .swatch{width:10px;height:10px;margin-right:6px}

@@ -14,9 +14,13 @@
     const pops = T.pops_by ? (T.pops_by[st.n] || []) : T.pops, sexes = T.sexes_by ? (T.sexes_by[st.n] || []) : [];
     if (st.pop !== 'all' && T.pops_by && !pops.includes(st.pop)) { A.set({pop: 'all'}); return; }
     if (st.sx && !sexes.includes(st.sx)) { A.set({sx: ''}); return; }
+    const facs = T.facs_by ? (T.facs_by[st.n] || []) : [];
+    if (st.fac && !facs.includes(st.fac)) { A.set({fac: ''}); return; }
+    if (st.fac && st.sx) { A.set({sx: ''}); return; }   // a choice of facilities shows both sexes together
     const fields = A.countFields(T.counts).concat([
       {key: 'pop', label: 'People', options: [['all', 'Everyone']].concat(pops.map(p => [p, p + ' (as printed)']))},
-      ...(sexes.length ? [A.sexField()] : []),
+      ...(sexes.length && !st.fac ? [A.sexField()] : []),
+      ...(facs.length ? [A.facField(facs)] : []),
       {key: 'by', label: 'Group diseases by', options: A.BY.concat(S.lists.map(l => [l.key, 'Historical list: ' + l.label]))},
       {key: 'lc', label: 'Mark changes of the official list of diseases', check: true, chip: 'List changes hidden'},
       {key: 'rep', label: 'Include tables that repeat an earlier report', check: true, chip: 'Repeated tables included'}
@@ -58,15 +62,20 @@
     const richest = () => { const n = new Map(); data.rows.forEach(r => { if (r.code !== 'UNCODED') n.set(r.year, (n.get(r.year) || 0) + 1); }); let best = last, top = -1; n.forEach((v, y) => { if (v > top || (v === top && y > best)) { top = v; best = y; } }); return best; };
     const year = data.years.includes(+st.y) ? +st.y : richest();
     const mixed = st.n === 'in' && !st.m && new Set(data.basis.values()).size > 1;
+    // what each year's figures cover (brief N23), for the standard view: a strip under the columns and a mark at each change
+    const plain = !st.fac && !st.sx && st.pop === 'all' && st.rep !== '1', cov = plain ? ((T.cover || {})[st.n] || {}) : {};
+    const levels = new Map(Object.entries(cov).map(([y, v]) => [+y, {s: v[0], t: (v[0] || 'not known') + (v[1] ? ': ' + v[1] : '') + (v[3] ? '. ' + v[3] : '')}]));
+    const covers = st.lc === '1' ? Object.entries(cov).filter(([, v]) => v[2]).map(([y, v]) => ({year: +y, text: y + ': ' + v[2]})) : [];
 
     // the main chart
     const chart = A.el('div', {});
     if (view === 'rank') C.rank(chart, {years: data.years, layers: layers.filter(L => L.key !== '__other'), seams, noun: spec.noun});
-    else C.columns(chart, {years: data.years, layers, mode: view, seams, selected: year, noun: spec.noun, label: cap(spec.noun) + ' in ' + T.name + ' by disease group',
+    else C.columns(chart, {years: data.years, layers, mode: view, seams, levels, covers, selected: year, noun: spec.noun, label: cap(spec.noun) + ' in ' + T.name + ' by disease group',
       onPick: yr => A.set({y: String(yr)}),
       tip: (yr, tot) => {
         const rows = layers.map(L => [L, L.values.get(yr) || 0]).filter(d => d[1] > 0).sort((a, b) => b[1] - a[1]).slice(0, 6);
-        return '<b>' + yr + '</b> · ' + A.fmt(tot) + ' ' + A.esc(spec.noun) + (mixed ? '<br><span class="dim">Patients ' + A.basisWord(data.basis.get(yr)) + '</span>' : '') + '<br>' +
+        return '<b>' + yr + '</b> · ' + A.fmt(tot) + ' ' + A.esc(spec.noun) + (mixed ? '<br><span class="dim">Patients ' + A.basisWord(data.basis.get(yr)) + '</span>' : '') +
+          (levels.get(yr) ? '<br><span class="dim">' + A.esc(levels.get(yr).t) + '</span>' : '') + '<br>' +
           rows.map(d => A.sw(d[0].colour) + A.esc(d[0].label) + ' <span class="dim">' + A.pct(d[1] / tot * 100) + '</span>').join('<br>') + '<br><span class="dim">Select the column to list its diseases</span>';
       }});
     const legend = A.el('div', {class: 'legend'}, layers.map(L => L.sel
@@ -75,7 +84,9 @@
     if (foldable) legend.append(A.el('button', {type: 'button', class: 'link', onclick: () => A.set({all: st.all === '1' ? '0' : '1'})}, st.all === '1' ? 'Show the main groups only' : 'Show all ' + allLayers.length + ' groups'));
     const note = view === 'rank'
       ? 'Number 1 is the group with the most ' + spec.noun + ' in that year.'
-      : 'Each column is one year; blank years have no surviving table.' + (seams.length ? ' A ▾ marks a year when the official list of diseases changed, so a jump there may come from the list.' : '') + (mixed ? ' Some years count patients treated instead of admitted; point at a column to see which.' : '');
+      : 'Each column is one year; blank years have no surviving table.' + (seams.length ? ' A ▾ marks a year when the official list of diseases changed, so a jump there may come from the list.' : '') + (mixed ? ' Some years count patients treated instead of admitted; point at a column to see which.' : '')
+        + (levels.size ? ' The strip under the columns says how each year’s figures were put together: grey, one return; ochre, hospitals, districts or stations added up; blue, regional reports added; red, one institution.' : '')
+        + (covers.length ? ' A ◆ marks a year whose coverage changed; point at it to see how.' : '');
     page.append(A.el('section', {class: 'panel'},
       A.el('div', {class: 'row spread'}, A.el('h2', {}, view === 'rank' ? 'Which groups of diseases led' : cap(spec.noun) + ' by group of diseases'),
         A.segmented('v', [['share', 'As shares'], ['count', 'As numbers'], ['rank', 'As a ranking']], 'How to show the figures')),

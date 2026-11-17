@@ -13,6 +13,7 @@
     const view = st.v || 'time', share = st.sc !== 'count', unit = share ? 'share of all ' + spec.noun : 'number of ' + spec.noun;
     const fields = A.countFields().concat([
       {key: 'pop', label: 'People', options: [['all', 'Everyone'], ['African', 'Africans, where printed separately'], ['European', 'Europeans, where printed separately']]},
+      A.illField(),
       A.sexField(),
       A.facField(),
       {key: 'own', label: 'Give each territory its own scale', check: true, chip: 'Own scale for each territory'},
@@ -31,7 +32,10 @@
       const data = await A.cells(T.key); if (!alive()) return;
       const tot = new Map(), hit = new Map();
       for (const r of data.rows) { tot.set(r.year, (tot.get(r.year) || 0) + r.value); if (sel.match(r.code)) hit.set(r.year, (hit.get(r.year) || 0) + r.value); }
-      let points = data.years.map(year => { const cases = hit.get(year) || 0, total = tot.get(year); return {year, cases, total, value: share ? cases / total * 100 : cases}; });
+      // a year with a table whose lines the choice of lines leaves out entirely: none recorded, not a missing table (brief N25)
+      const empty = st.ill ? [...data.classes.keys()].filter(y => !tot.has(y)) : [];
+      let points = data.years.concat(empty).sort((a, b) => a - b).map(year => { const cases = hit.get(year) || 0, total = tot.get(year) || 0;
+        return {year, cases, total, empty: !total, value: !total ? 0 : share ? cases / total * 100 : cases}; });
       if (st.avg === '1') {
         const m = new Map(points.map(p => [p.year, p]));
         points = points.map(p => { const a = m.get(p.year - 1), b = m.get(p.year + 1); return a && b ? {...p, value: (a.value + p.value + b.value) / 3} : null; }).filter(Boolean);
@@ -40,7 +44,8 @@
     }
     const any = series.some(s => s.cases > 0), max = d3.max(series.flatMap(s => s.points), p => p.value) || 1;
     const show = v => share ? A.pct(v) : A.fmt(v);
-    const pointTip = (s, p) => '<b>' + A.esc(s.T.name) + ', ' + p.year + '</b><br>' + A.fmt(p.cases) + ' of ' + A.fmt(p.total) + ' ' + A.esc(spec.noun) + ' (' + A.pct(p.cases / p.total * 100) + ')' + (st.avg === '1' ? '<br><span class="dim">Three-year average: ' + show(p.value) + '</span>' : '');
+    const noLine = '<span class="dim">The table of this year has no line of this choice</span>';
+    const pointTip = (s, p) => '<b>' + A.esc(s.T.name) + ', ' + p.year + '</b><br>' + (p.empty ? noLine : A.fmt(p.cases) + ' of ' + A.fmt(p.total) + ' ' + A.esc(spec.noun) + ' (' + A.pct(p.cases / p.total * 100) + ')') + (st.avg === '1' ? '<br><span class="dim">Three-year average: ' + show(p.value) + '</span>' : '');
 
     // heading
     const crumb = A.el('p', {class: 'eyebrow'}, sel.kind);
@@ -76,10 +81,10 @@
           const s = p.src, d = s.points.find(x => x.year === yr), seam = s.seams.find(x => x.year === yr);
           return (d ? pointTip(s, d) : '<b>' + A.esc(s.T.name) + ', ' + yr + '</b><br><span class="dim">No table for this year</span>') + (seam ? '<br><span class="dim">The official list of diseases changed this year.</span>' : '');
         }});
-      captions.push('Grey years have no table. ' + (st.own === '1' ? 'Each territory has its own scale.' : 'All territories share one scale, so heights can be compared.') + (st.lc === '1' ? ' Dotted lines mark a change of the official list of diseases.' : ''));
+      captions.push('Grey years have no table. ' + (st.ill ? 'A year whose table has no line of this choice counts as none recorded. ' : '') + (st.own === '1' ? 'Each territory has its own scale.' : 'All territories share one scale, so heights can be compared.') + (st.lc === '1' ? ' Dotted lines mark a change of the official list of diseases.' : ''));
     }
     captions.forEach(c => panel.append(A.el('p', {class: 'caption'}, c)));
-    panel.append(A.el('p', {class: 'caption'}, A.csvButton(() => series.flatMap(s => s.points.map(p => ({territory: s.T.name, year: p.year, disease: sel.title, count: spec.label, number: p.cases, all_cases: p.total, share_percent: +(p.cases / p.total * 100).toFixed(3)}))), 'atlas-' + sel.sel.replace(/[^A-Za-z0-9]+/g, '-'))),
+    panel.append(A.el('p', {class: 'caption'}, A.csvButton(() => series.flatMap(s => s.points.map(p => ({territory: s.T.name, year: p.year, disease: sel.title, count: spec.label, number: p.cases, all_cases: p.total, share_percent: p.total ? +(p.cases / p.total * 100).toFixed(3) : '', note: p.empty ? 'the table of this year has no line of this choice' : ''}))), 'atlas-' + sel.sel.replace(/[^A-Za-z0-9]+/g, '-'))),
       A.options(fields));
 
     // what belongs to it
@@ -112,7 +117,7 @@
       const edges = [0].concat(cuts);
       colours.forEach((c, i) => legend.append(A.el('div', {}, A.el('i', {style: 'background:' + c}), i === colours.length - 1 ? 'over ' + show(edges[i]) : (i === 0 ? 'up to ' : show(edges[i]) + ' to ') + show(cuts[i]))));
       legend.append(A.el('div', {class: 'gap'}, A.el('i', {style: 'background:#fbfbf7;border:1px solid #cdd3cd'}), 'none recorded'), A.el('div', {}, A.el('i', {style: 'background:repeating-linear-gradient(45deg,#eef1ec,#eef1ec 3px,#a9b5ae 3px,#a9b5ae 4px)'}), 'no table'));
-      const tipFor = (s, p, label) => p ? '<b>' + A.esc(s.T.name) + ', ' + label + '</b><br>' + show(p.value) + (p.cases != null ? '<br><span class="dim">' + A.fmt(p.cases) + ' of ' + A.fmt(p.total) + ' ' + A.esc(spec.noun) + '</span>' : '') : '<b>' + A.esc(s.T.name) + ', ' + label + '</b><br><span class="dim">No table</span>';
+      const tipFor = (s, p, label) => p ? '<b>' + A.esc(s.T.name) + ', ' + label + '</b><br>' + (p.empty ? noLine : show(p.value) + (p.cases != null ? '<br><span class="dim">' + A.fmt(p.cases) + ' of ' + A.fmt(p.total) + ' ' + A.esc(spec.noun) + '</span>' : '')) : '<b>' + A.esc(s.T.name) + ', ' + label + '</b><br><span class="dim">No table</span>';
       const bySeries = Object.fromEntries(series.map(s => [s.T.key, s]));
       const congoTip = '<b>Belgian Congo</b><br><span class="dim">Broad groups only; open its page</span>';
       const modeSeg = A.segmented('mode', [['year', 'One year'], ['decade', 'Decade by decade']], 'Period');

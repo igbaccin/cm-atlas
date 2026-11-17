@@ -35,8 +35,8 @@
   A.BY = [['african', 'Disease groups (standard)'], ['histcat', 'HistCat groups'], ['chapter', 'ICD-10 chapters'], ['kippen', 'Kippen’s 32 groups'], ['preston', 'Preston’s 12 groups']];
 
   // ---------- the selection, kept in the page address; only what differs from the standard view is written
-  const DEFAULTS = {p: '', d: 'g:Malaria', y: '', v: '', sc: 'share', n: 'in', m: '', pop: 'all', sx: '', fac: '', by: 'african', log: '0', avg: '0', lc: '1', rep: '0', all: '0', own: '0', mode: 'year'};
-  const CARRIED = ['n', 'm', 'pop', 'sx', 'fac', 'by', 'log', 'avg', 'lc', 'rep', 'sc', 'p', 'd'];
+  const DEFAULTS = {p: '', d: 'g:Malaria', y: '', v: '', sc: 'share', n: 'in', m: '', pop: 'all', sx: '', fac: '', ill: '', by: 'african', log: '0', avg: '0', lc: '1', rep: '0', all: '0', own: '0', mode: 'year'};
+  const CARRIED = ['n', 'm', 'pop', 'sx', 'fac', 'ill', 'by', 'log', 'avg', 'lc', 'rep', 'sc', 'p', 'd'];
   A.DEFAULTS = DEFAULTS;
   A.read = function () {
     const p = new URLSearchParams(location.hash.slice(1)), s = {...DEFAULTS};
@@ -88,17 +88,30 @@
     let order = c.order;
     if (st.n === 'in' && st.m === 'admitted') order = ['admitted during year'];
     if (st.n === 'in' && st.m === 'treated') order = ['treated during year'];
+    let out = {...c, order};
     if (A.FAC[st.fac]) {   // one choice of facilities (brief N23)
       const f = A.FAC[st.fac];
-      return {...c, order, label: c.label + ' (' + f.short + ')', noun: c.noun + ', ' + f.noun};
-    }
-    if (st.sx === 'male' || st.sx === 'female') {   // men or women alone, where a report prints them apart
+      out = {...out, label: c.label + ' (' + f.short + ')', noun: c.noun + ', ' + f.noun};
+    } else if (st.sx === 'male' || st.sx === 'female') {   // men or women alone, where a report prints them apart
       const who = st.sx === 'male' ? 'men' : 'women';
-      return {...c, order, label: c.label + ' (' + who + ')', noun: c.noun + ' among ' + who};
+      out = {...out, label: c.label + ' (' + who + ')', noun: c.noun + ' among ' + who};
     }
-    return {...c, order};
+    const il = A.ILL[st.ill];   // the lines of illness and injury alone, or those of persons without illness (brief N24)
+    const add = (s, x) => s.endsWith(')') ? s.slice(0, -1) + '; ' + x + ')' : s + ' (' + x + ')';
+    if (il) out = {...out, label: add(out.label, il.short), noun: add(out.noun, il.short)};
+    return out;
   };
   A.isQuick = (st = A.state) => ['in', 'died', 'out'].includes(st.n) && !st.m && st.pop === 'all' && st.rep !== '1' && !st.sx && !st.fac;
+  // What a line names (brief N24): an illness or injury, persons without illness (normal childbirth, examinations,
+  // vaccinations and the like), or neither. A code key of the data files carries the class where it is not the first:
+  // 'O80.900~1' is without illness, '~2' is neither or not known.
+  A.ILL = {
+    '1': {short: 'illness and injury only', option: 'Illness and injury only'},
+    '0': {short: 'persons without illness only', option: 'Persons without illness only (normal childbirth, examinations, vaccinations)'}
+  };
+  A.base = k => { const i = k.indexOf('~'); return i < 0 ? k : k.slice(0, i); };
+  A.klass = k => { const i = k.indexOf('~'); return i < 0 ? 0 : +k.slice(i + 1); };
+  A.keeps = (k, st = A.state) => st.ill === '1' ? A.klass(k) === 0 : st.ill === '0' ? A.klass(k) === 1 : true;
   // the facility choices (brief N23): gov and nodisp leave kinds out of the standard view, disp and mission keep one kind
   A.FAC = {
     gov: {i: 0, short: 'no mission or other services', noun: 'without mission, voluntary, prison, army and other services printed apart', option: 'Without mission, voluntary, prison, army and other services printed apart'},
@@ -107,15 +120,33 @@
     mission: {i: 3, short: 'mission and voluntary', noun: 'in mission and voluntary hospitals printed apart', option: 'Mission and voluntary hospitals printed apart, only'}
   };
   const quickCache = new Map();
-  const EMPTY = () => ({years: [], basis: new Map(), rows: [], printed: null});
+  const EMPTY = () => ({years: [], basis: new Map(), rows: [], printed: null, classes: new Map()});
 
   // One count per territory and year: rows of {year, code, value}; basis says which printed measure a year uses.
+  // classes gives each year's figures by what the lines name: [illness or injury, without illness, neither or not known],
+  // for every year with a table, also a year whose lines a choice leaves out entirely (that year is not in years).
   A.cells = async function (t, st = A.state) {
     if (A.isQuick(st)) {
-      const key = st.n + '|' + t;
+      const key = st.n + '|' + t + '|' + st.ill;
       if (quickCache.has(key)) return quickCache.get(key);
-      const q = (await A.get('quick_' + st.n + '.json')).territories[t];
-      const out = q ? {years: q.years, basis: new Map(q.years.map((y, i) => [y, q.basis[i]])), rows: q.cells.map(r => ({year: q.years[r[0]], code: q.codes[r[1]], value: r[2]})), printed: q.printed || null} : EMPTY();
+      const q = (await A.get('quick_' + st.n + '.json')).territories[t], out = EMPTY();
+      if (q) {
+        const sums = new Map(), cls = new Map();
+        for (const r of q.cells) {
+          const year = q.years[r[0]], k = q.codes[r[1]];
+          let a = cls.get(year); if (!a) cls.set(year, a = [0, 0, 0]); a[A.klass(k)] += r[2];
+          if (!A.keeps(k, st)) continue;
+          let m = sums.get(year); if (!m) sums.set(year, m = new Map());
+          const code = A.base(k); m.set(code, (m.get(code) || 0) + r[2]);
+        }
+        q.years.forEach((year, i) => {
+          const m = sums.get(year); let any = false;
+          if (cls.has(year)) out.classes.set(year, cls.get(year));   // every year with a table, kept or not (brief N25)
+          if (m) for (const [code, value] of m) if (value) { out.rows.push({year, code, value}); any = true; }
+          if (any) { out.years.push(year); out.basis.set(year, q.basis[i]); }
+        });
+        out.printed = q.printed || null;
+      }
       quickCache.set(key, out);
       return out;
     }
@@ -150,11 +181,16 @@
     }
     const out = EMPTY(); out.partial = [];
     [...byYear.keys()].sort((x, y) => x - y).forEach(yi => {
-      const m = byYear.get(yi), mi = mis.find(i => m.has(i)), year = b.years[yi], sum = new Map();
+      const m = byYear.get(yi), mi = mis.find(i => m.has(i)), year = b.years[yi], sum = new Map(), cls = [0, 0, 0];
       if (!whole(yi, mi)) { out.partial.push(year); return; }
-      for (const r of m.get(mi)) sum.set(r[4], (sum.get(r[4]) || 0) + r[5]);
+      for (const r of m.get(mi)) {
+        const k = b.codes[r[4]]; cls[A.klass(k)] += r[5];
+        if (!A.keeps(k, st)) continue;
+        const code = A.base(k); sum.set(code, (sum.get(code) || 0) + r[5]);
+      }
       let any = false;
-      for (const [ci, v] of sum) if (v) { out.rows.push({year, code: b.codes[ci], value: v}); any = true; }
+      if (cls.some(v => v)) out.classes.set(year, cls);   // every year with a table, kept or not (brief N25)
+      for (const [code, v] of sum) if (v) { out.rows.push({year, code, value: v}); any = true; }
       if (any) { out.years.push(year); out.basis.set(year, A.yearBasis(b, mi, sis, pi, year)); }
     });
     if (b.printed_groups && Object.keys(b.printed_groups).length) out.printed = b.printed_groups;
@@ -345,6 +381,23 @@
   };
   A.sexField = () => ({key: 'sx', label: 'Sex', options: [['', 'Both sexes'], ['male', 'Men, where printed apart'], ['female', 'Women, where printed apart']]});
   A.facField = keys => ({key: 'fac', label: 'Facilities', options: [['', 'All, as printed']].concat(Object.entries(A.FAC).filter(([k]) => !keys || keys.includes(k)).map(([k, f]) => [k, f.option]))});
+  // classes: the classes other than illness that have figures (1 without illness, 2 neither); all choices where not given
+  A.illField = classes => ({key: 'ill', label: 'What the lines name', options: [['', 'Everything, as printed'], ['1', A.ILL['1'].option]].concat(!classes || classes.includes(1) ? [['0', A.ILL['0'].option]] : [])});
+  // what a choice of lines leaves out, in words: from the classes of A.cells, for one year or summed over years
+  A.leftOut = function (classes, st = A.state, years) {
+    if (!st.ill || !classes) return '';
+    const s = [0, 0, 0]; (years || [...classes.keys()]).forEach(y => { const c = classes.get(y); if (c) c.forEach((v, i) => { s[i] += v; }); });
+    const parts = [], noun = (A.COUNTS[st.n] || A.COUNTS.in).noun;
+    if (st.ill === '1') {
+      if (s[1]) parts.push(A.fmt(s[1]) + ' in lines that name no illness (normal childbirth, examinations, vaccinations and the like)');
+      if (s[2]) parts.push(A.fmt(s[2]) + ' in lines that do not say (operations with no illness named, lines that mix illness with normal childbirth, lines with no name)');
+    } else {
+      if (s[0]) parts.push(A.fmt(s[0]) + ' in lines that name an illness or injury');
+      if (s[2]) parts.push(A.fmt(s[2]) + ' in lines that do not say');
+    }
+    if (parts.length) parts[0] = parts[0].replace(' in lines', ' ' + noun + ' in lines');
+    return parts.length ? 'Left out: ' + parts.join(', and ') + '.' : 'Nothing is left out.';
+  };
 
   // tooltip
   let tip;

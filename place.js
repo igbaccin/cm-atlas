@@ -17,7 +17,11 @@
     const facs = T.facs_by ? (T.facs_by[st.n] || []) : [];
     if (st.fac && !facs.includes(st.fac)) { A.set({fac: ''}); return; }
     if (st.fac && st.sx) { A.set({sx: ''}); return; }   // a choice of facilities shows both sexes together
+    // what the lines name (brief N24): offered where some line of this count is not an illness or injury
+    const ills = T.ill_by ? (T.ill_by[st.n] || []) : [];
+    if (st.ill && (!ills.length || !A.ILL[st.ill] || (st.ill === '0' && !ills.includes(1)))) { A.set({ill: ''}); return; }
     const fields = A.countFields(T.counts).concat([
+      ...(ills.length ? [A.illField(ills)] : []),
       {key: 'pop', label: 'People', options: [['all', 'Everyone']].concat(pops.map(p => [p, p + ' (as printed)']))},
       ...(sexes.length && !st.fac ? [A.sexField()] : []),
       ...(facs.length ? [A.facField(facs)] : []),
@@ -39,7 +43,8 @@
     }
     const first = data.years[0], last = data.years[data.years.length - 1];
     page.append(A.el('p', {class: 'lede'}, cap(spec.noun) + ' by disease, ' + first + ' to ' + last + '.' + (data.printed ? ' The reports of the ' + T.name + ' give broad groups of diseases only, shown here as printed.' : '')
-      + (data.partial && data.partial.length ? ' Left out: ' + data.partial.join(', ') + ', where only some tables print men and women apart, or the two do not add up to the printed total.' : '')));
+      + (data.partial && data.partial.length ? ' Left out: ' + data.partial.join(', ') + ', where only some tables print men and women apart, or the two do not add up to the printed total.' : '')
+      + (st.ill ? ' ' + A.leftOut(data.classes) : '')));
 
     // layers: the largest groups, the rest together
     const byGroup = new Map();
@@ -84,7 +89,7 @@
     if (foldable) legend.append(A.el('button', {type: 'button', class: 'link', onclick: () => A.set({all: st.all === '1' ? '0' : '1'})}, st.all === '1' ? 'Show the main groups only' : 'Show all ' + allLayers.length + ' groups'));
     const note = view === 'rank'
       ? 'Number 1 is the group with the most ' + spec.noun + ' in that year.'
-      : 'Each column is one year; blank years have no surviving table.' + (seams.length ? ' A ▾ marks a year when the official list of diseases changed, so a jump there may come from the list.' : '') + (mixed ? ' Some years count patients treated instead of admitted; point at a column to see which.' : '')
+      : 'Each column is one year; blank years have no surviving table' + (st.ill ? ', or no line of this choice.' : '.') + (seams.length ? ' A ▾ marks a year when the official list of diseases changed, so a jump there may come from the list.' : '') + (mixed ? ' Some years count patients treated instead of admitted; point at a column to see which.' : '')
         + (levels.size ? ' The strip under the columns says how each year’s figures were put together: grey, one return; ochre, hospitals, districts or stations added up; blue, regional reports added; red, one institution.' : '')
         + (covers.length ? ' A ◆ marks a year whose coverage changed; point at it to see how.' : '');
     page.append(A.el('section', {class: 'panel'},
@@ -135,7 +140,7 @@
         const src = meta.provenance.filter(r => r.territory === t && r.year === year && spec.streams.includes(r.stream) && (st.rep === '1' || !r.source_repeat));
         const yIdx = full.years.indexOf(year), sis = spec.streams.map(s => full.streams.indexOf(s)), pi = full.populations.indexOf(st.pop);
         const names = new Map();
-        (full.names || []).forEach(r => { if (r[0] === yIdx && sis.includes(r[1]) && r[2] === pi && (st.rep === '1' || !r[5])) { const code = full.codes[r[3]]; if (!names.has(code)) names.set(code, new Set()); r[4].forEach(n => names.get(code).add(n)); } });
+        (full.names || []).forEach(r => { if (r[0] === yIdx && sis.includes(r[1]) && r[2] === pi && (st.rep === '1' || !r[5]) && A.keeps(full.codes[r[3]])) { const code = A.base(full.codes[r[3]]); if (!names.has(code)) names.set(code, new Set()); r[4].forEach(n => names.get(code).add(n)); } });
         const byCode = new Map(); data.rows.forEach(r => { if (r.year === year) byCode.set(r.code, (byCode.get(r.code) || 0) + r.value); });
         const rows = [...byCode].sort((a, b) => b[1] - a[1]).map(([code, value]) => ({code: data.printed ? '' : code, title: data.printed ? data.printed[code] : ((S.codes[code] || [])[0] || 'Not classified'), names: [...(names.get(code) || [])].join('; '), value}));
         box.replaceChildren(
@@ -145,7 +150,8 @@
     });
     page.append(A.el('section', {class: 'panel'},
       A.el('div', {class: 'row spread'}, A.el('h2', {}, 'The most common ' + (data.printed ? 'groups' : 'diseases') + ' in'), stepper),
-      A.el('p', {class: 'sub'}, A.fmt(total) + ' ' + spec.noun + ' in ' + T.name + (mixed ? ', patients ' + A.basisWord(data.basis.get(year)) : '') + '. Select a column above to change the year.'),
+      A.el('p', {class: 'sub'}, A.fmt(total) + ' ' + spec.noun + ' in ' + T.name + (mixed ? ', patients ' + A.basisWord(data.basis.get(year)) : '') + '. Select a column above to change the year.'
+        + (st.ill ? ' ' + A.leftOut(data.classes, st, [year]) : '')),
       bars, everything, printed));
     main.replaceChildren(page);
   });

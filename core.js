@@ -32,10 +32,10 @@
     both: {label: 'In- and out-patients together', noun: 'cases (in- and out-patients together)', short: 'Cases', streams: ['both', 'in-patients and out-patients', 'in-patients and out-patients (not separated)', 'not separated'], order: ['count: treated, else admitted', 'treated during year', 'admitted during year']},
     deaths: {label: 'Deaths, from separate death tables', noun: 'deaths', short: 'Deaths', streams: ['deaths'], order: ['died']}
   };
-  A.BY = [['african', 'Disease groups (standard)'], ['histcat', 'HistCat groups'], ['chapter', 'ICD-10 chapters'], ['kippen', 'Kippen’s 32 groups'], ['preston', 'Preston’s 12 groups']];
+  A.BY = [['african', 'Standard groups'], ['histcat', 'HistCat groups'], ['chapter', 'ICD-10 chapters'], ['kippen', 'Kippen’s groups'], ['preston', 'Preston’s groups']];
 
   // ---------- the selection, kept in the page address; only what differs from the standard view is written
-  const DEFAULTS = {p: '', d: 'g:Malaria', y: '', v: '', sc: 'share', n: 'in', m: '', pop: 'all', sx: '', fac: '', ill: '', by: 'african', log: '0', avg: '0', lc: '1', rep: '0', all: '0', own: '0', mode: 'year'};
+  const DEFAULTS = {p: '', d: 'g:Malaria', y: '', v: '', sc: 'share', n: 'in', m: '', pop: 'all', sx: '', fac: '', ill: '', by: 'african', log: '0', avg: '0', lc: '1', rep: '0', all: '0', own: '0', mode: 'year', cat: 'J18', from: 'list1938', to: 'list1948a', chapter: 'I', sections: '', flow: ''};
   const CARRIED = ['n', 'm', 'pop', 'sx', 'fac', 'ill', 'by', 'log', 'avg', 'lc', 'rep', 'sc', 'p', 'd'];
   A.DEFAULTS = DEFAULTS;
   A.read = function () {
@@ -275,7 +275,7 @@
     }
     if (kind === 'c') {
       const c = S.codes[key]; if (!c) return null; const g = S.groups[c[1]], cat = S.cats[c[2]];
-      return {sel, kind: 'One entry of the classification (' + key + ')', title: c[0], colour: g.colour, match: code => code === key, parent: cat ? {label: cat[0], sel: 'k:' + c[2]} : {label: g.label, sel: 'g:' + g.key}, code: key};
+      return {sel, kind: 'Code ' + key, title: c[0], colour: g.colour, match: code => code === key, parent: cat ? {label: cat[0], sel: 'k:' + c[2]} : {label: g.label, sel: 'g:' + g.key}, code: key};
     }
     if (kind === 'l') {   // an item of a historical list: 'l:list1929:38'
       const j = key.indexOf(':'), list = key.slice(0, j), item = key.slice(j + 1), L = S.lists.find(x => x.key === list); if (!L) return null;
@@ -291,7 +291,7 @@
   // ---------- interface pieces
   const ui = {optionsOpen: false};
   A.placeLabel = T => T.name + (T.modern !== T.name ? ' (' + T.modern + ')' : '');
-  A.searchBox = function (placeholder, big) {
+  A.searchBox = function (placeholder, big, categoryOnly = false) {
     const input = A.el('input', {type: 'search', placeholder, 'aria-label': placeholder, autocomplete: 'off', spellcheck: 'false'});
     const list = A.el('ul', {class: 'results', hidden: true}), wrap = A.el('div', {class: 'search' + (big ? ' big' : '')}, input, list);
     let items = [], active = -1, seq = 0;
@@ -305,15 +305,17 @@
       const q = A.fold(input.value.trim()), mine = ++seq;
       if (q.length < 2) { list.hidden = true; items = []; return; }
       const S = A.S, out = [];
-      S.territories.forEach(T => { if (A.fold(T.name + ' ' + T.modern + ' ' + T.printed).includes(q)) out.push({label: A.placeLabel(T), kind: 'Place', href: A.url('place.html', {p: T.key, y: ''})}); });
-      S.groups.forEach(g => { if (g.key !== 'UNCODED' && A.fold(g.label + ' ' + g.key).includes(q)) out.push({label: g.label, kind: 'Disease group', href: A.url('disease.html', {d: 'g:' + g.key})}); });
+      if (!categoryOnly) {
+        S.territories.forEach(T => { if (A.fold(T.name + ' ' + T.modern + ' ' + T.printed).includes(q)) out.push({label: A.placeLabel(T), kind: 'Place', href: A.url('place.html', {p: T.key, y: ''})}); });
+        S.groups.forEach(g => { if (g.key !== 'UNCODED' && A.fold(g.label + ' ' + g.key).includes(q)) out.push({label: g.label, kind: 'Disease group', href: A.url('disease.html', {d: 'g:' + g.key})}); });
+      }
       const idx = await A.get('search.json'); if (mine !== seq) return;
       const starts = [], contains = [], alias = [];
-      for (const r of idx) { const t = A.fold(r.t); if (t.startsWith(q)) starts.push(r); else if (t.includes(q)) contains.push(r); else if (r.a.includes(q)) alias.push(r); }
+      for (const r of idx) { const t = A.fold(r.t); if (t.startsWith(q) || (categoryOnly && A.fold(r.k).startsWith(q))) starts.push(r); else if (t.includes(q)) contains.push(r); else if (r.a.includes(q)) alias.push(r); }
       starts.concat(contains, alias).slice(0, 9).forEach(r => {
         let hint = '';
         if (!A.fold(r.t).includes(q)) { const m = r.a.split('|').find(x => x.includes(q)); if (m) hint = 'printed as “' + m + '”'; }
-        out.push({label: r.t, kind: 'Disease', hint, href: A.url('disease.html', {d: 'k:' + r.k})});
+        out.push({label: categoryOnly ? r.k + ' · ' + r.t : r.t, kind: categoryOnly ? 'Category' : 'Disease', hint, href: categoryOnly ? A.url('classifications.html', {cat: r.k}) : A.url('disease.html', {d: 'k:' + r.k})});
       });
       items = out; active = -1; paint();
     }
@@ -329,13 +331,13 @@
   };
   A.header = function () {
     const h = A.$('#site-header'); h.replaceChildren();
-    const nav = [['index.html', 'Home'], ['place.html', 'Places'], ['disease.html', 'Diseases'], ['about.html', 'About the data']];
+    const nav = [['index.html', 'Home'], ['place.html', 'Places'], ['disease.html', 'Diseases'], ['classifications.html', 'Codes, groupings and lists'], ['about.html', 'About the data']];
     h.append(A.el('div', {class: 'wrap'},
       A.el('a', {class: 'brand', href: 'index.html'}, 'Atlas of disease'),
       A.el('nav', {'aria-label': 'Pages'}, nav.map(([f, label]) => A.el('a', {href: f, 'data-page': f, class: f === A.page ? 'here' : null}, label))),
       A.searchBox('Find a disease or a place')));
     A.$('#site-footer').replaceChildren(A.el('div', {class: 'wrap'}, 'Hospital figures as printed in the colonial annual medical reports, 1887–1967. They count patients, not rates of disease in the population. Draft for the authors, not for circulation.',
-      A.el('p', {style: 'margin-top:6px'}, 'For specialists: ', A.el('a', {href: 'classifications.html'}, 'how diseases are classified, and other classifications'), '.')));
+      A.el('p', {style: 'margin-top:6px'}, A.el('a', {href: 'classifications.html'}, 'Codes, groupings and lists'), '.')));
   };
   A.refreshNav = () => document.querySelectorAll('#site-header nav a').forEach(a => { a.href = a.dataset.page === 'index.html' ? 'index.html' : A.url(a.dataset.page, a.dataset.page === A.page ? {} : {y: ''}); });
 
@@ -363,7 +365,7 @@
       }
     });
     if (changed.length) grid.append(A.el('button', {type: 'button', class: 'link', onclick: () => A.set(Object.fromEntries(fields.map(f => [f.key, DEFAULTS[f.key]])))}, 'Back to the standard view'));
-    box.append(grid, A.el('p', {class: 'caption'}, A.el('a', {href: A.url('classifications.html')}, 'How diseases are classified, and other classifications')));
+    box.append(grid, A.el('p', {class: 'caption'}, A.el('a', {href: A.url('classifications.html')}, 'Codes, groupings and lists')));
     return box;
   };
   A.chips = function (fields) {
@@ -427,7 +429,7 @@
   A.seamsFor = function (t) {   // list changes that concern the patients on screen
     const streams = A.spec().streams;
     return (A.S.seams[t] || []).filter(s => !s.s.length || s.s.some(x => streams.includes(x)))
-      .map(s => ({year: s.y, text: 'From ' + s.y + ' the reports follow a different list of diseases (' + s.a + ' → ' + s.b + '). A jump here can come from the list rather than from disease.'}));
+      .map(s => ({year: s.y, text: 'From ' + s.y + ' the reports follow a different list of diseases (' + s.a + ' → ' + s.b + '). A jump here can come from the change of list.'}));
   };
 
   // ---------- start a page

@@ -89,7 +89,7 @@
     if (foldable) legend.append(A.el('button', {type: 'button', class: 'link', onclick: () => A.set({all: st.all === '1' ? '0' : '1'})}, st.all === '1' ? 'Show the main groups only' : 'Show all ' + allLayers.length + ' groups'));
     const note = view === 'rank'
       ? 'Number 1 is the group with the most ' + spec.noun + ' in that year.'
-      : 'Each column is one year; blank years have no surviving table' + (st.ill ? ', or no line of this choice.' : '.') + (seams.length ? ' A ▾ marks a year when the official list of diseases changed, so a jump there may come from the list.' : '') + (mixed ? ' Some years count patients treated instead of admitted; point at a column to see which.' : '')
+      : 'Each column is one year; blank years have no surviving table' + (st.ill ? ', or no line of this choice.' : '.') + (seams.length ? ' A ▾ marks a year when the official list of diseases changed, so a jump there may come from the list.' : '') + (mixed ? ' Some years count patients treated; others count admissions. Point at a column to see which.' : '')
         + (levels.size ? ' The strip under the columns says how each year’s figures were put together: grey, one return; ochre, hospitals, districts or stations added up; blue, regional reports added; red, one institution.' : '')
         + (covers.length ? ' A ◆ marks a year whose coverage changed; point at it to see how.' : '');
     page.append(A.el('section', {class: 'panel'},
@@ -145,7 +145,7 @@
         const rows = [...byCode].sort((a, b) => b[1] - a[1]).map(([code, value]) => ({code: data.printed ? '' : code, title: data.printed ? data.printed[code] : ((S.codes[code] || [])[0] || 'Not classified'), names: [...(names.get(code) || [])].join('; '), value}));
         box.replaceChildren(
           A.el('p', {class: 'caption'}, src.length ? 'Printed in: ' + src.map(r => r.table_title.replace(/\s*\/\s*/g, ', ') + ' (transcribed in ' + r.source_file + ', sheet “' + r.sheet + '”)').join('; ') + '.' : 'The printed table of this year is not indexed.'),
-          A.table([{key: 'names', label: 'Printed names'}, {key: 'title', label: 'Classified as'}, {key: 'code', label: 'ICD10h code'}, {key: 'value', label: 'Number', num: true}], rows));
+          A.table([{key: 'names', label: 'Printed names'}, {key: 'title', label: 'Code title'}, {key: 'code', label: 'Code'}, {key: 'value', label: 'Number', num: true}], rows));
       } catch (e) { box.replaceChildren(A.el('p', {class: 'caption warning'}, 'Could not load the printed names: ' + e.message)); }
     });
     page.append(A.el('section', {class: 'panel'},

@@ -50,7 +50,7 @@
     // heading
     const crumb = A.el('p', {class: 'eyebrow'}, sel.kind);
     if (sel.parent) crumb.append(' · part of ', A.el('a', {href: A.url('disease.html', {d: sel.parent.sel})}, sel.parent.label));
-    if (sel.scheme) crumb.append(' · ', A.el('a', {href: A.url('classifications.html', {by: sel.scheme})}, 'see the whole classification'));
+    if (sel.scheme) crumb.append(' · ', A.el('a', {href: A.url('classifications.html', {by: sel.scheme})}, 'Codes, groupings and lists'));
     const page = A.el('div', {class: 'wrap'}, crumb, A.el('h1', {}, sel.title),
       A.el('p', {class: 'lede'}, cap(spec.noun) + ' in ten territories, shown as ' + (share ? 'a share of all ' + spec.noun : 'numbers') + '.'),
       sel.formal ? A.el('p', {class: 'caption'}, sel.formal) : null);
@@ -99,7 +99,7 @@
       const names = A.el('p', {class: 'sub'}, '');
       const box = A.el('section', {class: 'panel'}, A.el('h2', {}, 'How the reports named it'), names);
       A.get('search.json').then(idx => { const r = idx.find(x => x.k === sel.cat); names.textContent = r && r.r ? r.r.split('|').join(' · ') : 'No other names recorded.'; });
-      if (codes.length > 1) box.append(A.el('h3', {style: 'margin-top:16px'}, 'Entries of the classification within it'), A.el('div', {class: 'pills'}, codes.map(([k, c]) => A.el('a', {class: 'pill', href: A.url('disease.html', {d: 'c:' + k})}, c[0], A.el('small', {style: 'color:var(--muted)'}, A.fmt(c[3]))))));
+      if (codes.length > 1) box.append(A.el('h3', {style: 'margin-top:16px'}, 'Codes within this disease'), A.el('div', {class: 'pills'}, codes.map(([k, c]) => A.el('a', {class: 'pill', href: A.url('disease.html', {d: 'c:' + k})}, c[0], A.el('small', {style: 'color:var(--muted)'}, A.fmt(c[3]))))));
       page.append(box);
     }
     main.replaceChildren(page);
